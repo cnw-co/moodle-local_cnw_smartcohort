@@ -28,6 +28,9 @@ require_once(__DIR__ . '/../lib.php');
 
 class local_cnw_smartcohort_observer
 {
+    /**
+     * @param \core\event\base $event
+     */
     public static function user_updated(core\event\base $event)
     {
         global $DB;
@@ -39,12 +42,18 @@ class local_cnw_smartcohort_observer
         $DB->insert_record('cnw_sc_queue', $data);
     }
 
+    /**
+     * @param \core\event\base $event
+     */
     public static function user_deleted(core\event\base $event)
     {
         $eventdata = $event->get_data();
         smartcohort_delete_insertions($eventdata['objectid']);
     }
 
+    /**
+     * @param \core\event\base $event
+     */
     public static function cohort_deleted(core\event\base $event)
     {
         global $DB;

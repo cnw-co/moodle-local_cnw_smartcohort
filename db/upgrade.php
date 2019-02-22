@@ -84,6 +84,8 @@ function xmldb_local_cnw_smartcohort_upgrade($oldversion)
             $dbman->add_field($table, $field);
         }
 
+        upgrade_plugin_savepoint(true, 2019022205, 'local', 'cnw_smartcohort');
+
     }
 
     // For further information please read the Upgrade API documentation:
