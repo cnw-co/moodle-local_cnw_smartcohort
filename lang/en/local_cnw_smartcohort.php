@@ -11,8 +11,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+$string['pluginname'] = 'Smart Cohort';
+
 $string = [
-    'pluginname' => 'Smart Cohort',
     'description' => 'The Smart Cohort Module allows authorized users to define filtering criteria and to specify which cohort the filtered users would be added to. Fields "Name" and "Cohort" are required in the module. If the set criteria are true for the user, they get added to the cohort. Fields left blank are ignored by the plugin.',
     'addfilter' => 'Create new filter',
     'editfilter' => 'Edit filter',
