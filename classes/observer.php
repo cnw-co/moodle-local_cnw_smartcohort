@@ -22,6 +22,7 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/../lib.php');
 
@@ -36,7 +37,6 @@ class local_cnw_smartcohort_observer
         $data->user_id = $eventdata['objectid'];
 
         $DB->insert_record('cnw_sc_queue', $data);
-
     }
 
     public static function user_deleted(core\event\base $event)
@@ -47,10 +47,8 @@ class local_cnw_smartcohort_observer
 
     public static function cohort_deleted(core\event\base $event)
     {
-
         global $DB;
         $eventdata = $event->get_data();
-
 
         $filters = $DB->get_records('cnw_sc_filters', ['cohort_id' => $eventdata['objectid']]);
 
@@ -60,7 +58,6 @@ class local_cnw_smartcohort_observer
 
         $DB->delete_records('cnw_sc_filters', ['cohort_id' => $eventdata['objectid']]);
         $DB->delete_records('cnw_sc_user_cohort', ['cohort_id' => $eventdata['objectid']]);
-
     }
 
 }

@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Smart cohort
@@ -31,15 +45,13 @@ $PAGE->set_url('/local/cnw_smartcohort/index.php');
 
 echo $OUTPUT->header();
 
-try {
-    $action = optional_param('action', false, PARAM_ALPHA);
-} catch (coding_exception $e) {
-}
+$action = optional_param('action', false, PARAM_ALPHA);
+
 switch ($action) {
 
-    //List
+    // List
     case false:
-        //Profile fields names
+        // Profile fields names
         $profileFields = [];
         $auth = new auth_plugin_base();
         $customfields = $auth->get_custom_user_profile_fields();
@@ -67,7 +79,7 @@ switch ($action) {
 
         $data = [];
         foreach ($filters as $filter) {
-            //BUTTONS
+            // BUTTONS
             $buttons = [
                 html_writer::link(new moodle_url('/local/cnw_smartcohort/edit.php', ['id' => $filter->id, 'delete' => 1]), $OUTPUT->pix_icon('t/delete', get_string('delete')), ['title' => get_string('delete')]),
                 html_writer::link(new moodle_url('/local/cnw_smartcohort/edit.php', ['id' => $filter->id]), $OUTPUT->pix_icon('t/edit', get_string('edit')), ['title' => get_string('edit')]),
@@ -75,7 +87,7 @@ switch ($action) {
             ];
             if (!$filter->initialized) unset($buttons[1]);
 
-            //RULES
+            // RULES
             $rules = $DB->get_records('cnw_sc_rules', ['filter_id' => $filter->id]);
             $rulesString = "<ul>";
             if (empty($rules)) {
@@ -94,10 +106,10 @@ switch ($action) {
             }
             $rulesString .= "</ul>";
 
-            //AFFECTED USERS COUNT
+            // AFFECTED USERS COUNT
             $affectedUsers = $DB->count_records('cnw_sc_user_cohort', ['filter_id' => $filter->id]);
 
-            //COHORT
+            // COHORT
             $cohort = $DB->get_record('cohort', array('id' => $filter->cohort_id));
 
             $data[] = [

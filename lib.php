@@ -33,7 +33,6 @@ function smartcohort_get_filters($with_deleted = false)
     global $DB, $CFG;
 
     if ($with_deleted == false) {
-        //return $DB->get_records_select('cnw_sc_filters', 'deleted_flag = 0');
         return $DB->get_records_sql("SELECT * FROM {cnw_sc_filters} WHERE deleted_flag = 0");
     } else {
         return $DB->get_records('cnw_sc_filters');
@@ -100,10 +99,10 @@ function smartcohort_store_filter($filter)
 {
     global $DB, $CFG;
 
-    //STORE FILTER
+    // STORE FILTER
     $filter->id = $DB->insert_record('cnw_sc_filters', $filter);
 
-    //STORE RULES
+    // STORE RULES
     $auth = new auth_plugin_base();
     $customfields = $auth->get_custom_user_profile_fields();
     $userfields = array_merge($auth->userfields, $customfields);
@@ -142,10 +141,10 @@ function smartcohort_update_filter($filter)
 {
     global $DB, $CFG;
 
-    //UPDATE FILTER
+    // UPDATE FILTER
     $DB->update_record('cnw_sc_filters', $filter);
 
-    //DELETE PREVIOUS RULES
+    // DELETE PREVIOUS RULES
     $DB->delete_records('cnw_sc_rules', ['filter_id' => $filter->id]);
 
     //STORE NEW RULES
@@ -188,7 +187,7 @@ function smartcohort_delete_filter($filter, $mode = 1)
 
     switch ($mode) {
         case 1:
-            //UNDO COHORT INSERTIONS
+            // UNDO COHORT INSERTIONS
             $shouldRemove = $DB->get_records_sql('select *, (select count(*) from {cnw_sc_user_cohort} t2 where t2.user_id = t1.user_id and t2.cohort_id = t1.cohort_id and t2.filter_id <> t1.filter_id) as other_filters from {cnw_sc_user_cohort} t1 where filter_id = ?  having other_filters = 0', [
                 $filter->id
             ]);
@@ -197,8 +196,8 @@ function smartcohort_delete_filter($filter, $mode = 1)
             }
             break;
         case 2:
-            //KEEP COHORT INSERTIONS
-            //NOTHING TO DO AT THIS POINT
+            // KEEP COHORT INSERTIONS
+            // NOTHING TO DO AT THIS POINT
             break;
     }
 
@@ -236,7 +235,7 @@ function smartcohort_run_filter($filter, $userid = null)
     $shouldBeInCohort = array_diff($affectedUserIds, $cohortUserIds);
     $shouldNotBeInCohort = array_diff($cohortUserIds, $affectedUserIds);
 
-    //REMOVE FROM COHORT
+    // REMOVE FROM COHORT
     foreach ($shouldNotBeInCohort as $userId) {
         $scAdds = $DB->get_records('cnw_sc_user_cohort', ['cohort_id' => $filter->cohort_id, 'user_id' => $userId]);
         if (count($scAdds) == 1 && array_values($scAdds)[0]->filter_id == $filter->id) {
@@ -245,7 +244,7 @@ function smartcohort_run_filter($filter, $userid = null)
         }
     }
 
-    //ADD TO COHORT
+    // ADD TO COHORT
     foreach ($shouldBeInCohort as $userId) {
         cohort_add_member($filter->cohort_id, $userId);
         if (!$DB->record_exists('cnw_sc_user_cohort', ['cohort_id' => $filter->cohort_id, 'user_id' => $userId, 'filter_id' => $filter->id])) {
@@ -257,7 +256,7 @@ function smartcohort_run_filter($filter, $userid = null)
         }
     }
 
-    //UPDATE THE FILTER'S RELATIONS IF ANOTHER FILTER ADDED USERS TO COHORT PREVIOUSLY
+    // UPDATE THE FILTER'S RELATIONS IF ANOTHER FILTER ADDED USERS TO COHORT PREVIOUSLY
     $intersect = array_intersect($affectedUserIds, $cohortUserIds);
     foreach ($intersect as $userId) {
         if (!$DB->record_exists('cnw_sc_user_cohort', ['cohort_id' => $filter->cohort_id, 'user_id' => $userId, 'filter_id' => $filter->id])) {

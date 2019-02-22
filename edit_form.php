@@ -70,7 +70,7 @@ class filter_edit_form extends moodleform
             $mform->addRule('cohort_id', get_string('required'), 'required', null, 'client');
         }
 
-        //User fields
+        // User fields
         $mform->addElement('header', 'rules', get_string('rules', 'local_cnw_smartcohort'));
 
         $options = [
