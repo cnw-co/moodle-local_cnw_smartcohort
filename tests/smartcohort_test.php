@@ -239,85 +239,9 @@ class smartcohort_test extends advanced_testcase
 
         $user = user_create_user($usertoAdd);
 
+        $search = $DB->count_records('cnw_sc_queue', ['user_id' => $user]);
 
-        $this->assertTrue(cohort_is_member($cohort->id, $user));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
-        $this->assertEquals($query, 1);
-    }
-
-    public function test_smartcohort_add_for_updated_user()
-    {
-
-        global $DB;
-        $this->resetAfterTest();
-
-        $cohort = $this->getDataGenerator()->create_cohort();
-
-        $usertoAdd = new stdClass();
-        $usertoAdd->username = 'cnw';
-        $usertoAdd->email = 'moodle@cnw.hu';
-        $usertoAdd->firstname = 'CNW';
-        $usertoAdd->lastname = 'CNW Zrt.';
-
-        $user = user_create_user($usertoAdd);
-
-        $this->assertFalse(cohort_is_member($cohort->id, $user));
-        $filter = $filter = $this->create_filter('CNW Co.', $cohort->id);
-        $this->assertFalse(cohort_is_member($cohort->id, $user));
-
-        $user = $DB->get_record('user', ['id' => $user]);
-        $user->lastname = 'CNW Co.';
-        user_update_user($user, false);
-
-        $this->assertTrue(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
-        $this->assertEquals($query, 1);
-    }
-
-    public function test_smartcohort_remove_for_updated_user()
-    {
-        global $DB;
-        $this->resetAfterTest();
-
-        $cohort = $this->getDataGenerator()->create_cohort();
-        $user = $this->getDataGenerator()->create_user();
-        $filter = $filter = $this->create_filter('CNW Co.', $cohort->id);
-
-        $user->lastname = 'CNW Co.';
-        user_update_user($user, false);
-        $this->assertTrue(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
-        $this->assertEquals($query, 1);
-
-        $user->lastname = 'CNW Moodle Co.';
-        user_update_user($user, false);
-        $this->assertFalse(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
-        $this->assertEquals($query, 0);
-    }
-
-    public function test_smartcohort_for_deleted_user()
-    {
-        global $DB;
-        $this->resetAfterTest();
-
-        $cohort = $this->getDataGenerator()->create_cohort();
-        $filter = $filter = $this->create_filter('CNW Co.', $cohort->id);
-
-        $usertoAdd = new stdClass();
-        $usertoAdd->username = 'cnw';
-        $usertoAdd->email = 'moodle@cnw.hu';
-        $usertoAdd->firstname = 'CNW';
-        $usertoAdd->lastname = 'CNW Co.';
-
-        user_create_user($usertoAdd);
-        $user = $DB->get_record('user', ['username' => 'cnw']);
-
-        $this->assertTrue(cohort_is_member($cohort->id, $user->id));
-        user_delete_user($user);
-        $this->assertFalse(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
-        $this->assertEquals($query, 0);
+        $this->assertTrue(($search != 0));
     }
 
     public function test_smartcohort_run_filters_for_all_users()
