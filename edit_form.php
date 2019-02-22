@@ -1,4 +1,18 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Smart cohort
@@ -7,7 +21,6 @@
  * @copyright   CNW Rendszerintegrációs Zrt. <moodle@cnw.hu>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -31,30 +44,29 @@ class filter_edit_form extends moodleform
         $mform = $this->_form;
         $filter = $this->_customdata['data'];
 
-
         $mform->addElement('html', '<div class="box informationbox">' . get_string('description', 'local_cnw_smartcohort') . '</div>');
 
-        //Basic data
+        // Basic data
         $mform->addElement('header', 'basic_data', get_string('basic_data', 'local_cnw_smartcohort'));
 
-        //Name field
+        // Name field
         $mform->addElement('text', 'name', get_string('name', 'local_cnw_smartcohort'), 'maxlength="254" size="50"');
         $mform->addRule('name', get_string('required'), 'required', null, 'client');
         $mform->setType('name', PARAM_TEXT);
 
-        //Cohort field
+        // Cohort field
         $options = [];
         foreach (cohort_get_all_cohorts()['cohorts'] as $cohort) {
             $options[$cohort->id] = $cohort->name;
         }
 
         $attributes = [];
-        if(isset($filter->cohort_id) && $filter->cohort_id > 0) {
+        if (isset($filter->cohort_id) && $filter->cohort_id > 0) {
             $attributes['disabled'] = 'disabled';
         }
 
         $mform->addElement('select', "cohort_id", get_string('cohort', 'local_cnw_smartcohort'), $options, $attributes);
-        if(!isset($filter->cohort_id) || $filter->cohort_id == 0) {
+        if (!isset($filter->cohort_id) || $filter->cohort_id == 0) {
             $mform->addRule('cohort_id', get_string('required'), 'required', null, 'client');
         }
 
@@ -87,7 +99,7 @@ class filter_edit_form extends moodleform
                 $fieldname = get_string($fieldname);
             }
 
-            if($i==0) {
+            if ($i == 0) {
                 $mform->addElement('select', "userfield_{$field}_operator", get_string('if', 'local_cnw_smartcohort', $fieldname), $options);
             } else {
                 $mform->addElement('select', "userfield_{$field}_operator", get_string('and_if', 'local_cnw_smartcohort', $fieldname), $options);
@@ -109,7 +121,7 @@ class filter_edit_form extends moodleform
 
         $this->add_action_buttons();
 
-        //RULE MUTATOR
+        // RULE MUTATOR
         if ($filter->id) {
             $rules = $DB->get_records('cnw_sc_rules', ['filter_id' => $filter->id]);
             foreach ($rules as $rule) {

@@ -1,5 +1,18 @@
 <?php
-
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  * Smart cohort
@@ -19,7 +32,7 @@ function smartcohort_get_filters($with_deleted = false)
 {
     global $DB, $CFG;
 
-    if($with_deleted == false) {
+    if ($with_deleted == false) {
         //return $DB->get_records_select('cnw_sc_filters', 'deleted_flag = 0');
         return $DB->get_records_sql("SELECT * FROM {cnw_sc_filters} WHERE deleted_flag = 0");
     } else {

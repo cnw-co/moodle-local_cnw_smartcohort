@@ -16,7 +16,8 @@ require_once($CFG->dirroot . '/lib/authlib.php');
 require_once(__DIR__ . "/../lib.php");
 require_once("$CFG->dirroot/user/lib.php");
 
-class smartcohort_test extends advanced_testcase {
+class smartcohort_test extends advanced_testcase
+{
 
     /**
      * Helper function for array is similar check
@@ -25,14 +26,15 @@ class smartcohort_test extends advanced_testcase {
      * @param $b
      * @return bool
      */
-    function arrays_are_similar($a, $b) {
+    function arrays_are_similar($a, $b)
+    {
         // if the indexes don't match, return immediately
         if (count(array_diff_assoc($a, $b))) {
             return false;
         }
         // we know that the indexes, but maybe not values, match.
         // compare the values between the two arrays
-        foreach($a as $k => $v) {
+        foreach ($a as $k => $v) {
             if ($v !== $b[$k]) {
                 return false;
             }
@@ -48,29 +50,30 @@ class smartcohort_test extends advanced_testcase {
      * @param null $cohortid
      * @return array
      */
-    private function create_filter($name = null, $cohortid = null, $getField = 'lastname') {
+    private function create_filter($name = null, $cohortid = null, $getField = 'lastname')
+    {
         global $DB;
 
-        if(is_null($cohortid)) {
+        if (is_null($cohortid)) {
             $cohort = $this->getDataGenerator()->create_cohort();
         }
 
         $filter = new stdClass();
-        $filter->name = (is_null($name))?'CNW Co.':$name;
-        $filter->cohort_id = (is_null($cohortid))?$cohort->id:$cohortid;
+        $filter->name = (is_null($name)) ? 'CNW Co.' : $name;
+        $filter->cohort_id = (is_null($cohortid)) ? $cohort->id : $cohortid;
 
         $auth = new auth_plugin_base();
         $customfields = $auth->get_custom_user_profile_fields();
         $userfields = array_merge($auth->userfields, $customfields);
-        foreach($userfields as $field) {
+        foreach ($userfields as $field) {
             $operator = 'userfield_' . $field . '_operator';
             $value = 'userfield_' . $field . '_value';
-            if($field != $getField) {
+            if ($field != $getField) {
                 $filter->$operator = '';
                 $filter->$value = '';
             } else {
                 $filter->$operator = 'equals';
-                $filter->$value = (is_null($name))?'CNW Co.':$name;
+                $filter->$value = (is_null($name)) ? 'CNW Co.' : $name;
             }
         }
 
@@ -85,7 +88,8 @@ class smartcohort_test extends advanced_testcase {
 
     }
 
-    public function testCohortLibHasAllFunction() {
+    public function testCohortLibHasAllFunction()
+    {
         global $DB;
         $this->resetAfterTest();
 
@@ -99,7 +103,8 @@ class smartcohort_test extends advanced_testcase {
         $this->assertFalse(cohort_is_member($cohort->id, $user->id));
     }
 
-    public function testCohortTableSchema() {
+    public function testCohortTableSchema()
+    {
         global $DB;
         $this->resetAfterTest();
 
@@ -114,7 +119,8 @@ class smartcohort_test extends advanced_testcase {
         $this->assertTrue(property_exists($table, 'cohortid'));
     }
 
-    public function test_smartcohort_get_filters() {
+    public function test_smartcohort_get_filters()
+    {
         global $DB;
 
         $empty = $DB->get_records('cnw_sc_filters');
@@ -124,7 +130,8 @@ class smartcohort_test extends advanced_testcase {
 
     }
 
-    public function test_smartcohort_store_filter() {
+    public function test_smartcohort_store_filter()
+    {
         global $DB;
         $this->resetAfterTest();
 
@@ -137,10 +144,10 @@ class smartcohort_test extends advanced_testcase {
         $auth = new auth_plugin_base();
         $customfields = $auth->get_custom_user_profile_fields();
         $userfields = array_merge($auth->userfields, $customfields);
-        foreach($userfields as $field) {
+        foreach ($userfields as $field) {
             $operator = 'userfield_' . $field . '_operator';
             $value = 'userfield_' . $field . '_value';
-            if($field != 'lastname') {
+            if ($field != 'lastname') {
                 $filter->$operator = '';
                 $filter->$value = '';
             } else {
@@ -156,7 +163,8 @@ class smartcohort_test extends advanced_testcase {
 
     }
 
-    public function test_smartcohort_update_filter() {
+    public function test_smartcohort_update_filter()
+    {
         global $DB;
         $this->resetAfterTest();
 
@@ -176,7 +184,8 @@ class smartcohort_test extends advanced_testcase {
 
     }
 
-    public function test_smartcohort_check_user_create_event_with_no_rules() {
+    public function test_smartcohort_check_user_create_event_with_no_rules()
+    {
         global $DB;
         $this->resetAfterTest();
 
@@ -199,7 +208,8 @@ class smartcohort_test extends advanced_testcase {
         $this->assertEquals($query, 0);
     }
 
-    public function test_smartcohort_check_user_create_event_with_rules() {
+    public function test_smartcohort_check_user_create_event_with_rules()
+    {
         global $DB;
         $this->resetAfterTest();
 
@@ -221,7 +231,8 @@ class smartcohort_test extends advanced_testcase {
         $this->assertEquals($query, 1);
     }
 
-    public function test_smartcohort_add_for_updated_user() {
+    public function test_smartcohort_add_for_updated_user()
+    {
 
         global $DB;
         $this->resetAfterTest();
@@ -249,7 +260,8 @@ class smartcohort_test extends advanced_testcase {
         $this->assertEquals($query, 1);
     }
 
-    public function test_smartcohort_remove_for_updated_user() {
+    public function test_smartcohort_remove_for_updated_user()
+    {
         global $DB;
         $this->resetAfterTest();
 
@@ -270,7 +282,8 @@ class smartcohort_test extends advanced_testcase {
         $this->assertEquals($query, 0);
     }
 
-    public function test_smartcohort_for_deleted_user() {
+    public function test_smartcohort_for_deleted_user()
+    {
         global $DB;
         $this->resetAfterTest();
 
@@ -293,7 +306,8 @@ class smartcohort_test extends advanced_testcase {
         $this->assertEquals($query, 0);
     }
 
-    public function test_smartcohort_run_filters_for_all_users() {
+    public function test_smartcohort_run_filters_for_all_users()
+    {
         global $DB;
         $this->resetAfterTest();
 
@@ -323,7 +337,8 @@ class smartcohort_test extends advanced_testcase {
 
     }
 
-    public function test_smartcohort_run_filters_for_one_user() {
+    public function test_smartcohort_run_filters_for_one_user()
+    {
         global $DB;
         $this->resetAfterTest();
 
@@ -353,7 +368,8 @@ class smartcohort_test extends advanced_testcase {
 
     }
 
-    public function test_smartcohort_delete_filter_with_undo() {
+    public function test_smartcohort_delete_filter_with_undo()
+    {
         global $DB;
         $this->resetAfterTest();
 
@@ -379,7 +395,8 @@ class smartcohort_test extends advanced_testcase {
 
     }
 
-    public function test_smartcohort_delete_with_keep() {
+    public function test_smartcohort_delete_with_keep()
+    {
         global $DB;
         $this->resetAfterTest();
 
