@@ -62,5 +62,6 @@ $string = [
     'initialize_filter_cron' => 'Initialize filters',
     'process_queue_cron' => 'Process created&edited users',
     'affect_need_initialize' => '',
-    'deleting' => 'filter is being deleted...'
+    'deleting' => 'filter is being deleted...',
+    'privacy:metadata' => 'Smart Cohort doesn\'t store any personal data.'
 ];

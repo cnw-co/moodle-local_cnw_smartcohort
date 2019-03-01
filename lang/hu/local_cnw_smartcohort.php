@@ -62,5 +62,6 @@ $string = [
     'initialize_filter_cron' => 'Szűrők inicializálása',
     'process_queue_cron' => 'Létrehozott és frissített felhasználók feldolgozása',
     'affect_need_initialize' => 'ismeretlen (ütemezett feladatra vár az inicializálás)',
-    'deleting' => 'törlés alatt'
+    'deleting' => 'törlés alatt',
+    'privacy:metadata' => 'A Smart Cohort kiegészítő nem tárol semmilyen személyes adatot.'
 ];
