@@ -12,7 +12,7 @@ The module was originally developed for our partners, but we feel like that this
 
 ## Version support ##
 
-Minimum: Moodle 3.1.16+
+Minimum: Moodle Moodle 3.5.4
 
 Maximum: 3.6.2+
 
