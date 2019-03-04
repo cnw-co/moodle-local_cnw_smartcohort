@@ -142,7 +142,7 @@ class filter_edit_form extends moodleform
         $errors = parent::validation($data, $files);
 
         if ($data['id'] && !$DB->record_exists('cnw_sc_filters', array('id' => $data['id']))) {
-            $errors['id'] = "Nincs ilyen ID.";
+            $errors['id'] = get_string('filter_is_not_exist', 'local_cnw_smartcohort');
         }
 
         return $errors;

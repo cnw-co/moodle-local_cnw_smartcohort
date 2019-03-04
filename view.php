@@ -42,7 +42,7 @@ navigation_node::override_active_url(new moodle_url('/local/cnw_smartcohort/inde
 $filter = $DB->get_record('cnw_sc_filters', ['id' => $id]);
 $strheading = get_string('filtered_users_on', 'local_cnw_smartcohort', format_string($filter->name));
 $PAGE->set_title($strheading);
-$PAGE->set_heading("Smart Cohort");
+$PAGE->set_heading(get_string('pluginname', 'local_cnw_smartcohort'));
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading($strheading);
@@ -58,7 +58,7 @@ foreach ($users as $user) {
 }
 
 $table = new html_table();
-$table->head = array('Name', 'Email');
+$table->head = array(get_string('name', 'local_cnw_smartcohort'), get_string('email', 'local_cnw_smartcohort'));
 $table->colclasses = array('', '');
 $table->id = 'users';
 $table->attributes['class'] = 'admintable generaltable';
