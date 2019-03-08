@@ -6,7 +6,7 @@ We developed the Smart Cohort module based on our years of experience in Moodle 
 
 Course creators, site administrators and teachers are surely familiar with cohorts in the system that allow new colleagues / students to be easily enrolled in the appropriate courses. The users only have to be added to the group and the rest is automatically arranged by the system.
 
-The Smart Cohort Module allows authorized users to define filtering criteria and to specify which cohort the filtered users would be added to.This add-on works well with any authentication plugins, so when the user is created or its data gets updated, the system checks for which groups to add to or remove the user from based on the filtering criteria.
+The Smart Cohort Module allows authorized users to define filtering criteria and to specify which cohort the filtered users would be added to. This add-on works well with any authentication plugins, so when the user is created or its data gets updated, the system checks for which groups to add to or remove the user from based on the filtering criteria.
 
 The module was originally developed for our partners, but we feel like that this community would also find it useful, so we've made it available to you for free. With the help of this module it's easier for our partners to identify courses based on area, job, position, and they do not have to deal with managing cohorts.
 
@@ -46,6 +46,10 @@ After that, check your cohorts and see the magic
 Moodle plugin directory, or you can use git to clone it into your source:
 
      `git clone git@github.com:cnw-co/moodle-local_cnw_smartcohort.git local/cnw_smartcohort`
+     
+      Or install via the Moodle plugin directory:
+         
+      https://moodle.org/plugins/local_cnw_smartcohort
      
 2. Then run the Moodle upgrade
 
