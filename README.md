@@ -12,9 +12,9 @@ The module was originally developed for our partners, but we feel like that this
 
 ## Version support ##
 
-Minimum: Moodle Moodle 3.5.4
+Minimum: Moodle 3.5.4
 
-Maximum: 3.6.2+
+Maximum: 3.6.3+
 
 ## Screenshots ##
 

@@ -69,7 +69,8 @@ function smartcohort_get_users_by_filter($filter, $userid = null)
         $queryParams[] = $rule->value;
 
         if ($rule->is_custom_field) {
-            $sql .= ", (SELECT UID.data FROM {user_info_field} UIF, {user_info_data} UID WHERE UID.fieldid = UIF.id AND UIF.shortname = '{$rule->field}' AND UID.userid = u.id) as {$rule->field} ";
+            $field = str_replace('profile_field_', '', $rule->field);
+            $sql .= ", (SELECT UID.data FROM {user_info_field} UIF, {user_info_data} UID WHERE UID.fieldid = UIF.id AND UIF.shortname = '{$field}' AND UID.userid = u.id) as {$rule->field} ";
         }
     }
 
