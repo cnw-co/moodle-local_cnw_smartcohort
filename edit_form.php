@@ -56,7 +56,7 @@ class filter_edit_form extends moodleform
 
         // Cohort field
         $options = [];
-        foreach (cohort_get_all_cohorts()['cohorts'] as $cohort) {
+        foreach (cohort_get_all_cohorts(0, 10000)['cohorts'] as $cohort) {
             $options[$cohort->id] = $cohort->name;
         }
 
