@@ -77,6 +77,8 @@ class filter_edit_form extends moodleform
             '' => get_string('user_field_select_default', 'local_cnw_smartcohort'),
             'equals' => get_string('equals', 'local_cnw_smartcohort'),
             'not equals' => get_string('not_equals', 'local_cnw_smartcohort'),
+            'start with' => get_string('start_with', 'local_cnw_smartcohort'),
+            'end with' => get_string('end_with', 'local_cnw_smartcohort')
         ];
 
         $auth = new auth_plugin_base();

@@ -56,6 +56,12 @@ function smartcohort_get_users_by_filter($filter, $userid = null)
             case 'not equals':
                 $operator = '<>';
                 break;
+            case 'start with':
+                $operator = 'LIKE';
+                break;
+            case 'end with':
+                $operator = 'LIKE';
+                break;
             default:
                 $operator = '=';
                 break;
@@ -63,10 +69,24 @@ function smartcohort_get_users_by_filter($filter, $userid = null)
 
         if (($operator == '=' && $rule->value == '') || ($operator == '<>' && $rule->value != '')) {
             $queryWhere[] = "({$rule->field} {$operator} ? OR {$rule->field} IS NULL)";
+        } elseif ($operator == 'LIKE' && $rule->value != '') {
+            $queryWhere[] = "{$rule->field} {$operator} ?";
         } else {
             $queryWhere[] = "{$rule->field} {$operator} ?";
         }
-        $queryParams[] = $rule->value;
+
+        if ($operator == 'LIKE') {
+            switch ($rule->operator) {
+                case 'start with':
+                    $queryParams[] = $rule->value . '%';
+                    break;
+                case 'end with':
+                    $queryParams[] = '%' . $rule->value;
+                    break;
+            }
+        } else {
+            $queryParams[] = $rule->value;
+        }
 
         if ($rule->is_custom_field) {
             $field = str_replace('profile_field_', '', $rule->field);

@@ -100,7 +100,7 @@ switch ($action) {
                     } else {
                         $rulesString .= '<li>' . get_string('and_if', 'local_cnw_smartcohort', $profileFields[$rule->field]);
                     }
-                    $rulesString .= ' ' . get_string(str_replace(' ', '_', $rule->operator), 'local_cnw_smartcohort') . ' ' . get_string('to', 'local_cnw_smartcohort') .   ' <i>\'' . $rule->value . '\'</i></li>';
+                    $rulesString .= ' ' . get_string(str_replace(' ', '_', $rule->operator), 'local_cnw_smartcohort') . ' ' . (($rule->operator == 'equals' || $rule->operator == 'not equals') ? get_string('to', 'local_cnw_smartcohort') : '') . ' <i>\'' . $rule->value . '\'</i></li>';
                     $i++;
                 }
             }
