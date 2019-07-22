@@ -100,7 +100,7 @@ function smartcohort_get_users_by_filter($filter, $userid = null)
         array_unshift($queryParams, $userid);
     }
     if (!empty($queryWhere)) {
-        $sql .= 'HAVING ' . implode(' AND ', $queryWhere);
+        $sql .= 'AND ' . implode(' AND ', $queryWhere);
     }
 
     $users = $DB->get_records_sql($sql, $queryParams);
@@ -209,7 +209,7 @@ function smartcohort_delete_filter($filter, $mode = 1)
     switch ($mode) {
         case 1:
             // UNDO COHORT INSERTIONS
-            $shouldRemove = $DB->get_records_sql('select *, (select count(*) from {cnw_sc_user_cohort} t2 where t2.user_id = t1.user_id and t2.cohort_id = t1.cohort_id and t2.filter_id <> t1.filter_id) as other_filters from {cnw_sc_user_cohort} t1 where filter_id = ?  having other_filters = 0', [
+            $shouldRemove = $DB->get_records_sql('select * from {cnw_sc_user_cohort} t1 where filter_id = ? and not exists (select * from {cnw_sc_user_cohort} t2 where t2.user_id = t1.user_id and t2.cohort_id = t1.cohort_id and t2.filter_id <> t1.filter_id)', [
                 $filter->id
             ]);
             foreach ($shouldRemove as $scAdd) {
