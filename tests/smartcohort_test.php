@@ -75,25 +75,37 @@ class smartcohort_test extends advanced_testcase
         $filter = new stdClass();
         $filter->name = (is_null($name)) ? 'CNW Co.' : $name;
         $filter->cohort_id = (is_null($cohortid)) ? $cohort->id : $cohortid;
+        $filter->rules = array();
 
         $auth = new auth_plugin_base();
         $customfields = $auth->get_custom_user_profile_fields();
+        if (!empty($customfields)) {
+            foreach ($customfields as $k => $v) {
+                $customfields[$k] = str_replace('profile_field_', '', $v);
+            }
+        }
         $userfields = array_merge($auth->userfields, $customfields);
+
         foreach ($userfields as $field) {
-            $operator = 'userfield_' . $field . '_operator';
-            $value = 'userfield_' . $field . '_value';
+
             if ($field != $getField) {
-                $filter->$operator = '';
-                $filter->$value = '';
+                $filter->rules[] = array(
+                    'userfield' => array_search($field, $userfields),
+                    'operator' => '',
+                    'value' => '',
+                    'logicaloperator' => ''
+                );
             } else {
-                $filter->$operator = 'equals';
-                $filter->$value = (is_null($name)) ? 'CNW Co.' : $name;
+                $filter->rules[] = array(
+                    'userfield' => array_search($field, $userfields),
+                    'operator' => 'equals',
+                    'value' => (is_null($name)) ? 'CNW Co.' : $name,
+                    'logicaloperator' => ''
+                );
             }
         }
 
         $filterid = smartcohort_store_filter($filter);
-
-        //var_dump($filterid);
 
         return array(
             'filter' => $filter,
@@ -154,27 +166,38 @@ class smartcohort_test extends advanced_testcase
         $filter = new stdClass();
         $filter->name = 'CNW Co.';
         $filter->cohort_id = $cohort->id;
+        $filter->rules = array();
 
         $auth = new auth_plugin_base();
         $customfields = $auth->get_custom_user_profile_fields();
-        $userfields = array_merge($auth->userfields, $customfields);
-        foreach ($userfields as $field) {
-            $operator = 'userfield_' . $field . '_operator';
-            $value = 'userfield_' . $field . '_value';
-            if ($field != 'lastname') {
-                $filter->$operator = '';
-                $filter->$value = '';
-            } else {
-                $filter->$operator = 'equals';
-                $filter->$value = 'CNW Co.';
+        if (!empty($customfields)) {
+            foreach ($customfields as $k => $v) {
+                $customfields[$k] = str_replace('profile_field_', '', $v);
             }
         }
+        $userfields = array_merge($auth->userfields, $customfields);
 
+        foreach ($userfields as $field) {
+            if ($field != 'lastname') {
+                $filter->rules[] = array(
+                    'userfield' => array_search($field, $userfields),
+                    'operator' => '',
+                    'value' => '',
+                    'logicaloperator' => ''
+                );
+            } else {
+                $filter->rules[] = array(
+                    'userfield' => array_search($field, $userfields),
+                    'operator' => 'equals',
+                    'value' => 'CNW Co.',
+                    'logicaloperator' => ''
+                );
+            }
+        }
 
         $this->assertEquals(count($DB->get_records('cnw_sc_filters')), 0);
         smartcohort_store_filter($filter);
         $this->assertEquals(count($DB->get_records('cnw_sc_filters')), 1);
-
     }
 
     public function test_smartcohort_update_filter()
@@ -184,10 +207,10 @@ class smartcohort_test extends advanced_testcase
 
         $filter = $this->create_filter();
 
-        $this->assertEquals($filter['filter']->userfield_lastname_value, 'CNW Co.');
+        $this->assertEquals($filter['filter']->rules[1]['value'], 'CNW Co.');
 
         $filter['filter']->id = $filter['filterid'];
-        $filter['filter']->userfield_lastname_value = 'CNW Co. ' . date('Y');
+        $filter['filter']->rules[1]['value'] = 'CNW Co. ' . date('Y');
 
         smartcohort_update_filter($filter['filter']);
 

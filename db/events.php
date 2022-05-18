@@ -43,6 +43,17 @@ $observers = array(
     array(
         'eventname'   => '\core\event\cohort_deleted',
         'callback'    => 'local_cnw_smartcohort_observer::cohort_deleted'
+    ),
+    array(
+        'eventname'   => '\core_customfield\event\field_created',
+        'callback'    => 'local_cnw_smartcohort_observer::field_created'
+    ),
+    array(
+        'eventname'   => '\core_customfield\event\field_deleted',
+        'callback'    => 'local_cnw_smartcohort_observer::field_deleted'
+    ),
+    array(
+        'eventname'   => '\core_customfield\event\field_updated',
+        'callback'    => 'local_cnw_smartcohort_observer::field_updated'
     )
-
 );

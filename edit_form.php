@@ -78,39 +78,48 @@ class filter_edit_form extends moodleform
             'equals' => get_string('equals', 'local_cnw_smartcohort'),
             'not equals' => get_string('not_equals', 'local_cnw_smartcohort'),
             'start with' => get_string('start_with', 'local_cnw_smartcohort'),
-            'end with' => get_string('end_with', 'local_cnw_smartcohort')
+            'end with' => get_string('end_with', 'local_cnw_smartcohort'),
+            'contains' => get_string('contains', 'local_cnw_smartcohort'),
+            'not contains' => get_string('not_contains', 'local_cnw_smartcohort')
+        ];
+
+        $logicaloperator = [
+            '' => get_string('user_field_select_default', 'local_cnw_smartcohort'),
+            'AND' => get_string('AND', 'local_cnw_smartcohort'),
+            'OR' => get_string('OR', 'local_cnw_smartcohort')
         ];
 
         $auth = new auth_plugin_base();
         $customfields = $auth->get_custom_user_profile_fields();
+
+        if (!empty($customfields)) {
+            foreach ($customfields as $k => $v) {
+                $customfields[$k] = str_replace('profile_field_', '', $v);
+            }
+        }
+
         $userfields = array_merge($auth->userfields, $customfields);
 
-        $customfieldname = $DB->get_records('user_info_field', null, '', 'shortname, name');
+        $repeatarray = array();
+        $repeateloptions = array();
+        $groupitems = array(
+            'label' => $mform->createElement('static', 'label', 'label', get_string('edit_if', 'local_cnw_smartcohort')),
+            'userfield' => $mform->createElement('select', 'userfield', get_string('userfieldno', 'local_cnw_smartcohort'), $userfields),
+            'operator' => $mform->createElement('select', 'operator', get_string('operatorno', 'local_cnw_smartcohort'), $options),
+            'value' => $mform->createElement('text', 'value', get_string('valueno', 'local_cnw_smartcohort')),
+            'logicaloperator' => $mform->createElement('select', 'logicaloperator', '', $logicaloperator)
+        );
 
-        $i = 0;
-        foreach ($userfields as $field) {
-            $fieldname = $field;
-            if ($fieldname === 'lang') {
-                $fieldname = get_string('language');
-            } else if (!empty($customfields) && in_array($field, $customfields)) {
-                $fieldshortname = str_replace('profile_field_', '', $fieldname);
-                $fieldname = $customfieldname[$fieldshortname]->name;
-            } else if ($fieldname == 'url') {
-                $fieldname = get_string('webpage');
-            } else {
-                $fieldname = get_string($fieldname);
-            }
+        $group = $mform->createElement('group', 'rules', get_string('ruleno', 'local_cnw_smartcohort'), $groupitems);
+        $repeatarray[] = $group;
+        $repeateloptions['rules']['type'] = PARAM_RAW;
 
-            if ($i == 0) {
-                $mform->addElement('select', "userfield_{$field}_operator", get_string('if', 'local_cnw_smartcohort', $fieldname), $options);
-            } else {
-                $mform->addElement('select', "userfield_{$field}_operator", get_string('and_if', 'local_cnw_smartcohort', $fieldname), $options);
-            }
 
-            $mform->addElement('text', "userfield_{$field}_value", get_string('to', 'local_cnw_smartcohort'), 'maxlength="254" size="50"');
-
-            $mform->setType("userfield_{$field}_value", PARAM_TEXT);
-            $i++;
+        if ($filter->id) {
+            $numberofrepeats = $DB->count_records('cnw_sc_rules', ['filter_id' => $filter->id]);
+            $this->repeat_elements($repeatarray, $numberofrepeats, $repeateloptions, 'rule_repeats', 'rule_add', 1, null, true);
+        } else {
+            $this->repeat_elements($repeatarray, 1, $repeateloptions, 'rule_repeats', 'rule_add', 1, null, true);
         }
 
         $mform->addElement('hidden', 'id');
@@ -121,16 +130,30 @@ class filter_edit_form extends moodleform
             $mform->setType('returnurl', PARAM_LOCALURL);
         }
 
+        $rule_repeats = $mform->getElementValue('rule_repeats');
+        $last_rule_index = $rule_repeats - 1;
+        $mform->hideIf("rules[$last_rule_index][logicaloperator]", 'rule_repeats', 'eq', $rule_repeats);
+
+        for ($i=0; $i < $rule_repeats; $i++){
+            $mform->setDefault("rules[$i][logicaloperator]", '');
+        }
         $this->add_action_buttons();
 
         // RULE MUTATOR
         if ($filter->id) {
             $rules = $DB->get_records('cnw_sc_rules', ['filter_id' => $filter->id]);
+
+            $i = 0;
             foreach ($rules as $rule) {
-                $operatorKey = "userfield_{$rule->field}_operator";
-                $valueKey = "userfield_{$rule->field}_value";
+                $userfieldKey = "rules[$i][userfield]";
+                $operatorKey = "rules[$i][operator]";
+                $valueKey = "rules[$i][value]";
+                $logicaloperatorKey = "rules[$i][logicaloperator]";
+                $filter->$userfieldKey = array_search($rule->field, $userfields);
                 $filter->$operatorKey = $rule->operator;
                 $filter->$valueKey = $rule->value;
+                $filter->$logicaloperatorKey = $rule->logicaloperator;
+                $i++;
             }
         }
 

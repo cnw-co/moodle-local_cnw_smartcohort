@@ -45,6 +45,7 @@ function smartcohort_get_users_by_filter($filter, $userid = null)
 
     $rules = $DB->get_records('cnw_sc_rules', ['filter_id' => $filter]);
 
+    $view = "mdl_user_all_fields";
     $sql = "SELECT u.*";
     $queryWhere = [];
     $queryParams = [];
@@ -61,6 +62,12 @@ function smartcohort_get_users_by_filter($filter, $userid = null)
                 break;
             case 'end with':
                 $operator = 'LIKE';
+                break;
+            case 'contains':
+                $operator = 'LIKE';
+                break;
+            case 'not contains':
+                $operator = 'NOT LIKE';
                 break;
             default:
                 $operator = '=';
@@ -83,25 +90,42 @@ function smartcohort_get_users_by_filter($filter, $userid = null)
                 case 'end with':
                     $queryParams[] = '%' . $rule->value;
                     break;
+                case 'contains':
+                    $queryParams[] = '%' . $rule->value . '%';
+                    break;
+                case 'not contains':
+                    $queryParams[] = '%' . $rule->value . '%';
+                    break;
             }
         } else {
             $queryParams[] = $rule->value;
         }
-
-        if ($rule->is_custom_field) {
-            $field = str_replace('profile_field_', '', $rule->field);
-            $sql .= ", (SELECT UID.data FROM {user_info_field} UIF, {user_info_data} UID WHERE UID.fieldid = UIF.id AND UIF.shortname = '{$field}' AND UID.userid = u.id) as {$rule->field} ";
-        }
     }
 
-    $sql .= " FROM {user} u WHERE (u.deleted = 0 and u.id <> 1) ";
+    $sql .= " FROM {$view} u WHERE (u.deleted = 0 AND u.id <> 1 ";
+
     if ($userid) {
         $sql .= "AND u.id = ? ";
         array_unshift($queryParams, $userid);
     }
     if (!empty($queryWhere)) {
-        $sql .= 'HAVING ' . implode(' AND ', $queryWhere);
+        $i = 0;
+        $j = count($rules);
+        $sql .= "AND ";
+        foreach ($rules as $arule) {
+            if ($j > 1 and $i < $j) {
+                $sql .= "{$queryWhere[$i]} {$arule->logicaloperator} ";
+            }
+            else {
+                $sql .= "{$queryWhere[$i]}";
+            }
+            $i++;
+        }
     }
+
+    $sql .= ")";
+    $sql = str_replace('AND )', ')', $sql);
+    $sql = str_replace('OR )', ')', $sql);
 
     $users = $DB->get_records_sql($sql, $queryParams);
 
@@ -126,27 +150,37 @@ function smartcohort_store_filter($filter)
     // STORE RULES
     $auth = new auth_plugin_base();
     $customfields = $auth->get_custom_user_profile_fields();
+
+    if (!empty($customfields)) {
+        foreach ($customfields as $k => $v) {
+            $customfields[$k] = str_replace('profile_field_', '', $v);
+        }
+    }
+
     $userfields = array_merge($auth->userfields, $customfields);
-    foreach ($userfields as $field) {
 
-        $operatorKey = "userfield_{$field}_operator";
-        if ($filter->$operatorKey != '') {
-            $valueKey = "userfield_{$field}_value";
+    $rulecount = count($filter->rules);
+    $cnt = 1;
+    foreach ($filter->rules as $filter_rule) {
+        $rule = new stdClass();
+        $rule->filter_id = $filter->id;
+        $rule->field = $userfields[$filter_rule['userfield']];
 
-            $rule = new stdClass();
-            $rule->filter_id = $filter->id;
-            $rule->field = $field;
-            $rule->operator = $filter->$operatorKey;
-            $rule->value = $filter->$valueKey;
-            if (empty($customfields) || !in_array($field, $customfields)) {
-                $rule->is_custom_field = 0;
-            } else {
-                $rule->is_custom_field = 1;
-            }
-
-            $rule->id = $DB->insert_record('cnw_sc_rules', $rule);
+        if (empty($customfields) || !in_array($userfields[$filter_rule['userfield']], $customfields)) {
+            $rule->is_custom_field = 0;
+        } else {
+            $rule->is_custom_field = 1;
         }
 
+        $rule->operator = $filter_rule['operator'];
+        $rule->value = $filter_rule['value'];
+        if ($rulecount != 1 && $cnt < $rulecount) {
+            $rule->logicaloperator = $filter_rule['logicaloperator'];
+        }
+        if (($rulecount == 1 && $rule->operator != '' && $rule->value != '') || ($cnt <= $rulecount && $rule->operator != '' && $rule->value != '')) {
+            $rule->id = $DB->insert_record('cnw_sc_rules', $rule);
+        }
+        $cnt++;
     }
 
     return $filter->id;
@@ -171,27 +205,37 @@ function smartcohort_update_filter($filter)
     //STORE NEW RULES
     $auth = new auth_plugin_base();
     $customfields = $auth->get_custom_user_profile_fields();
+
+    if (!empty($customfields)) {
+        foreach ($customfields as $k => $v) {
+            $customfields[$k] = str_replace('profile_field_', '', $v);
+        }
+    }
+
     $userfields = array_merge($auth->userfields, $customfields);
-    foreach ($userfields as $field) {
 
-        $operatorKey = "userfield_{$field}_operator";
-        if ($filter->$operatorKey != '') {
-            $valueKey = "userfield_{$field}_value";
+    $rulecount = count($filter->rules);
+    $cnt = 1;
+    foreach ($filter->rules as $filter_rule) {
+        $rule = new stdClass();
+        $rule->filter_id = $filter->id;
+        $rule->field = $userfields[$filter_rule['userfield']];
 
-            $rule = new stdClass();
-            $rule->filter_id = $filter->id;
-            $rule->field = $field;
-            $rule->operator = $filter->$operatorKey;
-            $rule->value = $filter->$valueKey;
-            if (empty($customfields) || !in_array($field, $customfields)) {
-                $rule->is_custom_field = 0;
-            } else {
-                $rule->is_custom_field = 1;
-            }
-
-            $rule->id = $DB->insert_record('cnw_sc_rules', $rule);
+        if (empty($customfields) || !in_array($userfields[$filter_rule['userfield']], $customfields)) {
+            $rule->is_custom_field = 0;
+        } else {
+            $rule->is_custom_field = 1;
         }
 
+        $rule->operator = $filter_rule['operator'];
+        $rule->value = $filter_rule['value'];
+        if ($rulecount != 1 && $cnt < $rulecount) {
+            $rule->logicaloperator = $filter_rule['logicaloperator'];
+        }
+        if (($rulecount == 1 && $rule->operator != '' && $rule->value != '') || ($cnt <= $rulecount && $rule->operator != '' && $rule->value != '')) {
+            $rule->id = $DB->insert_record('cnw_sc_rules', $rule);
+        }
+        $cnt++;
     }
 }
 
@@ -209,9 +253,15 @@ function smartcohort_delete_filter($filter, $mode = 1)
     switch ($mode) {
         case 1:
             // UNDO COHORT INSERTIONS
-            $shouldRemove = $DB->get_records_sql('select *, (select count(*) from {cnw_sc_user_cohort} t2 where t2.user_id = t1.user_id and t2.cohort_id = t1.cohort_id and t2.filter_id <> t1.filter_id) as other_filters from {cnw_sc_user_cohort} t1 where filter_id = ?  having other_filters = 0', [
-                $filter->id
-            ]);
+            $shouldRemove = $DB->get_records_sql('select *
+                                                      from {cnw_sc_user_cohort} t1
+                                                      where filter_id = ?
+                                                      group by t1.id
+                                                      having (select count(*) from {cnw_sc_user_cohort} t2 where t2.user_id = t1.user_id and t2.cohort_id = t1.cohort_id and t2.filter_id <> t1.filter_id) = 0',
+                [
+                    $filter->id
+                ]);
+
             foreach ($shouldRemove as $scAdd) {
                 cohort_remove_member($scAdd->cohort_id, $scAdd->user_id);
             }
@@ -238,6 +288,8 @@ function smartcohort_run_filter($filter, $userid = null)
     global $DB;
 
     $affectedUsers = smartcohort_get_users_by_filter($filter->id, $userid);
+//    var_dump($affectedUsers);
+//    die;
     if ($userid) {
         $cohortUsers = $DB->get_records('cohort_members', ['cohortid' => $filter->cohort_id, 'userid' => $userid]);
     } else {
@@ -315,4 +367,68 @@ function smartcohort_delete_insertions($userid)
     global $DB;
 
     $DB->delete_records('cnw_sc_user_cohort', ['user_id' => $userid]);
+}
+
+function smartcohort_create_view($view)
+{
+    global $DB;
+
+    $auth = new auth_plugin_base();
+    $customfields = $auth->get_custom_user_profile_fields();
+
+    if (!empty($customfields)) {
+        foreach ($customfields as $k => $v) {
+            $customfields[$k] = str_replace('profile_field_', '', $v);
+        }
+    }
+
+    if (!smartcohort_view_exists($view))
+    {
+
+        $select = "u.*";
+        if (!empty($customfields)) {
+            $select .= ", ";
+        }
+
+        foreach ($customfields as $customfield) {
+            $select .= "MAX(CASE uif.shortname WHEN '{$customfield}' THEN uid.data END) AS {$customfield}";
+            if (end($customfields) != $customfield) {
+                $select .= ", ";
+            }
+        }
+
+        $sql = "CREATE VIEW {$view} AS
+                SELECT {$select}
+                FROM {user} u
+                LEFT JOIN {user_info_data} uid ON u.id = uid.userid
+                LEFT JOIN {user_info_field} uif ON uif.id = uid.fieldid
+                GROUP BY u.id";
+
+        $DB->execute($sql);
+    }
+}
+
+function smartcohort_drop_view($view)
+{
+    global $DB;
+
+    if (smartcohort_view_exists($view))
+    {
+        $sql = "DROP VIEW {$view}";
+        $DB->execute($sql);
+    }
+
+}
+
+function smartcohort_view_exists($view)
+{
+    global $DB;
+
+    try {
+        $DB->get_records_sql("SELECT * FROM {$view}");
+    }
+    catch (dml_read_exception $e) {
+        return false;
+    }
+    return true;
 }

@@ -55,6 +55,13 @@ switch ($action) {
         $profileFields = [];
         $auth = new auth_plugin_base();
         $customfields = $auth->get_custom_user_profile_fields();
+
+        if (!empty($customfields)) {
+            foreach ($customfields as $k => $v) {
+                $customfields[$k] = str_replace('profile_field_', '', $v);
+            }
+        }
+
         $userfields = array_merge($auth->userfields, $customfields);
         $customfieldname = $DB->get_records('user_info_field', null, '', 'shortname, name');
         foreach ($userfields as $field) {
@@ -94,14 +101,20 @@ switch ($action) {
                 $rulesString .= "<li>" . get_string('all_users', 'local_cnw_smartcohort') . "</li>";
             } else {
                 $i = 0;
+                $previousRule = null;
                 foreach ($rules as $rule) {
                     if ($i == 0) {
                         $rulesString .= '<li>' . get_string('if', 'local_cnw_smartcohort', $profileFields[$rule->field]);
-                    } else {
+                    } elseif ($previousRule->logicaloperator == 'AND') {
                         $rulesString .= '<li>' . get_string('and_if', 'local_cnw_smartcohort', $profileFields[$rule->field]);
+                    } elseif ($previousRule->logicaloperator == 'OR') {
+                        $rulesString .= '<li>' . get_string('or_if', 'local_cnw_smartcohort', $profileFields[$rule->field]);
                     }
-                    $rulesString .= ' ' . get_string(str_replace(' ', '_', $rule->operator), 'local_cnw_smartcohort') . ' ' . (($rule->operator == 'equals' || $rule->operator == 'not equals') ? get_string('to', 'local_cnw_smartcohort') : '') . ' <i>\'' . $rule->value . '\'</i></li>';
+                    if ($rule->operator) {
+                        $rulesString .= ' ' . get_string(str_replace(' ', '_', $rule->operator), 'local_cnw_smartcohort') . ' ' . ' <i>\'' . $rule->value . '\'</i></li>';
+                    }
                     $i++;
+                    $previousRule = $rule;
                 }
             }
             $rulesString .= "</ul>";

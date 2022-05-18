@@ -24,8 +24,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-if ($hassiteconfig) {
-    $button = new admin_externalpage('local_cnw_smartcohort_list',
-        get_string('pluginname', 'local_cnw_smartcohort'), $CFG->wwwroot . '/local/cnw_smartcohort/index.php');
-    $ADMIN->add('accounts', $button);
+if ($hassiteconfig
+    or has_capability('moodle/cohort:manage', context_system::instance())
+    or has_capability('moodle/cohort:view', context_system::instance())) {
+
+        $button = new admin_externalpage('local_cnw_smartcohort_list',
+            get_string('pluginname', 'local_cnw_smartcohort'), $CFG->wwwroot . '/local/cnw_smartcohort/index.php', array('moodle/cohort:manage', 'moodle/cohort:view'));
+        $ADMIN->add('accounts', $button);
 }
