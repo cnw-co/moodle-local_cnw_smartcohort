@@ -88,6 +88,10 @@ function xmldb_local_cnw_smartcohort_upgrade($oldversion)
 
     }
 
+    $view = "mdl_user_all_fields";
+    smartcohort_drop_view($view);
+    smartcohort_create_view($view);
+
     // For further information please read the Upgrade API documentation:
     // https://docs.moodle.org/dev/Upgrade_API
     //

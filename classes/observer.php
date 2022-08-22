@@ -36,7 +36,7 @@ class local_cnw_smartcohort_observer
         global $DB;
         $eventdata = $event->get_data();
 
-        $view = "mdl_user_all_fields";
+        $view = 'mdl_user_all_fields';
         smartcohort_drop_view($view);
         smartcohort_create_view($view);
 
@@ -73,32 +73,26 @@ class local_cnw_smartcohort_observer
         $DB->delete_records('cnw_sc_user_cohort', ['cohort_id' => $eventdata['objectid']]);
     }
 
-    public static function field_created(core_customfield\event\field_created $event)
+    public static function user_info_field_created(core\event\base $event)
     {
         global $DB;
-        $eventdata = $event->get_data();
-        var_dump($eventdata);
-        $view = "field_created";
+        $view = "mdl_user_all_fields";
         smartcohort_drop_view($view);
         smartcohort_create_view($view);
     }
 
-    public static function field_deleted(core_customfield\event\field_deleted $event)
+    public static function user_info_field_deleted(core\event\base $event)
     {
         global $DB;
-        $eventdata = $event->get_data();
-        var_dump($eventdata);
-        $view = "field_deleted";
+        $view = "mdl_user_all_fields";
         smartcohort_drop_view($view);
         smartcohort_create_view($view);
     }
 
-    public static function field_updated(core_customfield\event\field_updated $event)
+    public static function user_info_field_updated(core\event\base $event)
     {
         global $DB;
-        $eventdata = $event->get_data();
-        var_dump($eventdata);
-        $view = "field_updated";
+        $view = "mdl_user_all_fields";
         smartcohort_drop_view($view);
         smartcohort_create_view($view);
     }
