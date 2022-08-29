@@ -146,14 +146,17 @@ $PAGE->set_title($strheading);
 $PAGE->set_heading(get_string('pluginname', 'local_cnw_smartcohort'));
 $PAGE->navbar->add($strheading);
 
-//var_dump($filter);
-//die;
 $editform = new filter_edit_form(null, array('data' => $filter, 'returnurl' => $returnurl));
 
 if ($editform->is_cancelled()) {
     redirect($returnurl);
-
 } else if ($data = $editform->get_data()) {
+
+    for ($i = 0; $i < sizeof($data->rules); $i++) {
+        if ($data->rules[$i]['logicaloperator'] == '')
+            $data->rules[$i]['logicaloperator'] = 'AND';
+    }
+
     $oldcontextid = $context->id;
 
     if ($data->id) {
@@ -163,11 +166,9 @@ if ($editform->is_cancelled()) {
     }
     $data->initialized = 0;
 
+
     $DB->update_record('cnw_sc_filters', $data);
 
-//    var_dump($filter);
-//    var_dump($data);
-//    die;
     redirect($returnurl);
 }
 
@@ -176,11 +177,5 @@ echo $OUTPUT->heading($strheading);
 
 $editform->display();
 
-//$filters = smartcohort_get_filters();
-//foreach ($filters as $filter) {
-//    $asd = $filter;
-//}
-////smartcohort_run_filter($asd, 195);
-////var_dump($filters);
 echo $OUTPUT->footer();
 
