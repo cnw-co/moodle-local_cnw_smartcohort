@@ -32,7 +32,7 @@ function smartcohort_get_filters($with_deleted = false)
 {
     global $DB, $CFG;
 
-    if ($with_deleted == true) { //display users that which have  deleted_flag = 0
+    if ($with_deleted == true) { //display filters that  have  deleted_flag = 0
         return $DB->get_records_sql("SELECT * FROM {cnw_sc_filters} WHERE deleted_flag = 0");
     } else {
         return $DB->get_records('cnw_sc_filters');
