@@ -84,7 +84,9 @@ function smartcohort_get_users_by_filter($filter, $userid = null)
                     $queryParams[] = '%' . $rule->value;
                     break;
             }
-        } else {
+        }elseif($operator == '<>') {
+            $queryParams[] =   '%' . $rule->value ;
+        }  else {
             $queryParams[] = $rule->value;
         }
 
@@ -95,6 +97,10 @@ function smartcohort_get_users_by_filter($filter, $userid = null)
     }
 
     $sql .= " FROM {user} u WHERE (u.deleted = 0 and u.id <> 1) ";
+    if (!empty($queryParams) && $rule->field == 'email' && $operator == '<>') {
+        $sql .=  " AND u.email NOT LIKE '" . implode('', $queryParams) ."'" ;   //$sql .=  "  AND u.email NOT LIKE '$queryParams'";  
+        $queryWhere == false;
+     }
     if ($userid) {
         $sql .= "AND u.id = ? ";
         array_unshift($queryParams, $userid);

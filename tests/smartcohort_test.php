@@ -359,5 +359,32 @@ class smartcohort_test extends advanced_testcase
         $this->assertEquals($query, 1);
     }
 
+    public function test_not_equals_filter() {
+        // Create cohort for test
+        $cohort = $this->getDataGenerator()->create_cohort();
+    
+        // Create some users with different email addresses
+        $users = array(
+            $this->getDataGenerator()->create_user(array('email' => 'test1@cnw.com')),
+            $this->getDataGenerator()->create_user(array('email' => 'test2@cnw.com')),
+            $this->getDataGenerator()->create_user(array('email' => 'test3@cnw.com')),
+            $this->getDataGenerator()->create_user(array('email' => 'test4@acme.com'))
+        );
+    
+        // Apply the 'not equals' filter on email addresses with the value 'CNW Co.''
+        $filter = new stdClass();
+        $filter->name = 'Test filter';
+        $filter->cohort_id = $cohort->id;
+        $filter->userfield_email_operator = 'not equals';
+        $filter->userfield_email_value = 'CNW Co.';
+        smartcohort_store_filter($filter);
+    
+           // Verify that only users with an email address different from 'CNW Co.' are included
+        $result = smartcohort_get_user_ids($cohort->id, true);
+        $this->assertEquals(count($result), 1);
+        $this->assertEquals($result[0], $users[3]->id);
+     
+    }
+
 
 }
