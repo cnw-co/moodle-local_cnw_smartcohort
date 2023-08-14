@@ -27,40 +27,38 @@ namespace local_cnw_smartcohort\task;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once __DIR__ . '/../../lib.php';
+require_once(__DIR__ . '/../../lib.php');
 
-class initialize_filter extends \core\task\scheduled_task
-{
+class initialize_rule extends \core\task\scheduled_task {
+
 
     /**
      * Return the task's name as shown in admin screens.
      *
      * @return string
      */
-    public function get_name()
-    {
-        return get_string('initialize_filter_cron', 'local_cnw_smartcohort');
+    public function get_name() {
+        return get_string('initialize_rule_cron', 'local_cnw_smartcohort');
     }
 
     /**
      * Execute the task.
      */
-    public function execute()
-    {
+    public function execute() {
         global $DB;
-        $filters = $DB->get_records('cnw_sc_filters', ['initialized' => 0]);
+        $rules = $DB->get_records('cnw_sc_rule', ['initialized' => 0]);
 
-        foreach ($filters as $filter) {
-            smartcohort_run_filter($filter);
-            $filter->initialized = 1;
-            $DB->update_record('cnw_sc_filters', $filter);
+        foreach ($rules as $rule) {
+            smartcohort_run_rule($rule);
+            $rule->initialized = 1;
+            $DB->update_record('cnw_sc_rule', $rule);
         }
 
-        $filters = smartcohort_get_filters(true);
+        $rules = smartcohort_get_rules(true);
 
-        foreach ($filters as $filter) {
-            if ($filter->deleted_flag != "0") {
-                smartcohort_delete_filter($filter, $filter->deleted_flag);
+        foreach ($rules as $rule) {
+            if ($rule->deleted_flag != "0") {
+                smartcohort_delete_rule($rule, $rule->deleted_flag);
             }
         }
 

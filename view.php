@@ -33,22 +33,21 @@ require_login();
 require_capability('moodle/cohort:manage', $context);
 
 $PAGE->set_context($context);
-$baseurl = new moodle_url('/local/cnw_smartcohort/view.php', array('id' => $id));
+$baseurl = new moodle_url('/local/cnw_smartcohort/view.php', ['id' => $id]);
 $PAGE->set_url($baseurl);
 $PAGE->set_pagelayout('admin');
 
 navigation_node::override_active_url(new moodle_url('/local/cnw_smartcohort/index.php'));
 
-$filter = $DB->get_record('cnw_sc_filters', ['id' => $id]);
-$strheading = get_string('filtered_users_on', 'local_cnw_smartcohort', format_string($filter->name));
+$rule = $DB->get_record('cnw_sc_rule', ['id' => $id]);
+$strheading = get_string('filtered_users_on', 'local_cnw_smartcohort', format_string($rule->name));
 $PAGE->set_title($strheading);
 $PAGE->set_heading(get_string('pluginname', 'local_cnw_smartcohort'));
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading($strheading);
 
-$users = smartcohort_get_users_by_filter($id);
-
+$users = smartcohort_get_users_by_rule($id);
 $data = [];
 foreach ($users as $user) {
     $data[] = [
@@ -58,8 +57,8 @@ foreach ($users as $user) {
 }
 
 $table = new html_table();
-$table->head = array(get_string('name', 'local_cnw_smartcohort'), get_string('email', 'local_cnw_smartcohort'));
-$table->colclasses = array('', '');
+$table->head = [get_string('name', 'local_cnw_smartcohort'), get_string('email', 'local_cnw_smartcohort')];
+$table->colclasses = ['', ''];
 $table->id = 'users';
 $table->attributes['class'] = 'admintable generaltable';
 if (count($data) > 0) {
@@ -74,5 +73,5 @@ if (count($data) > 0) {
 
 echo html_writer::table($table);
 
-echo $OUTPUT->footer();
 
+echo $OUTPUT->footer();

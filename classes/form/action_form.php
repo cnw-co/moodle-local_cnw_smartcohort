@@ -22,9 +22,37 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-if (has_capability('local/cnw_smartcohort:manage', context_system::instance())) {
-    $button = new admin_externalpage('local_cnw_smartcohort_list',
-        get_string('pluginname', 'local_cnw_smartcohort'), $CFG->wwwroot . '/local/cnw_smartcohort/index.php', 'local/cnw_smartcohort:manage');
-    $ADMIN->add('accounts', $button);
+namespace local_cnw_smartcohort\form;
+
+use moodleform;
+
+/**
+ * Class action_form
+ *
+ * @package     local_cnw_smartcohort
+ * @copyright   CNW Rendszerintegrációs Zrt. <moodle@cnw.hu>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class action_form extends moodleform {
+
+    /**
+     * Form definition.
+     */
+    public function definition() {
+
+        $mform =& $this->_form;
+
+        $this->add_action_buttons();
+    }
+
+    public function validation($data, $files) {
+
+        $scdata = $this->_customdata['scdata'];
+
+        if (empty($scdata)) {
+            return ['name' => 'required', 'cohort_id' => 'required'];
+        } else {
+            return [];
+        }
+    }
 }

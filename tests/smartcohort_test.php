@@ -30,8 +30,8 @@ require_once($CFG->dirroot . '/lib/authlib.php');
 require_once(__DIR__ . "/../lib.php");
 require_once("$CFG->dirroot/user/lib.php");
 
-class smartcohort_test extends advanced_testcase
-{
+class smartcohort_test extends advanced_testcase {
+
 
     /**
      * Helper function for array is similar check
@@ -40,8 +40,7 @@ class smartcohort_test extends advanced_testcase
      * @param $b
      * @return bool
      */
-    function arrays_are_similar($a, $b)
-    {
+    public function arrays_are_similar($a, $b) {
         // if the indexes don't match, return immediately
         if (count(array_diff_assoc($a, $b))) {
             return false;
@@ -58,64 +57,42 @@ class smartcohort_test extends advanced_testcase
     }
 
     /**
-     * Helper for create new filter for lastname default
+     * Helper for create new rule for lastname default
      *
      * @param null $name
      * @param null $cohortid
      * @return array
      */
-    private function create_filter($name = null, $cohortid = null, $getField = 'lastname')
-    {
+    private function create_rule($name = null, $cohortid = null, $getfield = 'lastname') {
         global $DB;
 
         if (is_null($cohortid)) {
             $cohort = $this->getDataGenerator()->create_cohort();
         }
 
-        $filter = new stdClass();
-        $filter->name = (is_null($name)) ? 'CNW Co.' : $name;
-        $filter->cohort_id = (is_null($cohortid)) ? $cohort->id : $cohortid;
-        $filter->rules = array();
+        $rule = [];
+        $rule['name'] = (is_null($name)) ? 'CNW Co.' : $name;
+        $rule['cohort_id'] = (is_null($cohortid)) ? $cohort->id : $cohortid;
 
-        $auth = new auth_plugin_base();
-        $customfields = $auth->get_custom_user_profile_fields();
-        if (!empty($customfields)) {
-            foreach ($customfields as $k => $v) {
-                $customfields[$k] = str_replace('profile_field_', '', $v);
-            }
-        }
-        $userfields = array_merge($auth->userfields, $customfields);
+        $filter = [];
+        $filter[$getfield][0]['operator'] = 0;
+        $filter[$getfield][0]['value'] = (is_null($name)) ? 'CNW Co.' : $name;
 
-        foreach ($userfields as $field) {
+        $rule['rule_id'] = smartcohort_save($rule, $filter);
 
-            if ($field != $getField) {
-                $filter->rules[] = array(
-                    'userfield' => array_search($field, $userfields),
-                    'operator' => '',
-                    'value' => '',
-                    'logicaloperator' => ''
-                );
-            } else {
-                $filter->rules[] = array(
-                    'userfield' => array_search($field, $userfields),
-                    'operator' => 'equals',
-                    'value' => (is_null($name)) ? 'CNW Co.' : $name,
-                    'logicaloperator' => ''
-                );
-            }
-        }
+        $ruleobj = new stdClass();
+        $ruleobj->id = $rule['rule_id'];
+        $ruleobj->name = $rule['name'];
+        $ruleobj->cohort_id = $rule['cohort_id'];
 
-        $filterid = smartcohort_store_filter($filter);
-
-        return array(
-            'filter' => $filter,
-            'filterid' => $filterid
-        );
+        return [
+            'rule' => $ruleobj,
+            'filter' => $filter
+        ];
 
     }
 
-    public function testCohortLibHasAllFunction()
-    {
+    public function testcohortlibhasallfunction() {
         global $DB;
         $this->resetAfterTest();
 
@@ -129,8 +106,7 @@ class smartcohort_test extends advanced_testcase
         $this->assertFalse(cohort_is_member($cohort->id, $user->id));
     }
 
-    public function testCohortTableSchema()
-    {
+    public function testcohorttableschema() {
         global $DB;
         $this->resetAfterTest();
 
@@ -145,240 +121,208 @@ class smartcohort_test extends advanced_testcase
         $this->assertTrue(property_exists($table, 'cohortid'));
     }
 
-    public function test_smartcohort_get_filters()
-    {
+    public function test_smartcohort_get_rules() {
         global $DB;
 
-        $empty = $DB->get_records('cnw_sc_filters');
-        $lib_get = smartcohort_get_filters();
+        $empty = $DB->get_records('cnw_sc_rule');
+        $libget = smartcohort_get_rules();
 
-        $this->assertTrue($this->arrays_are_similar($empty, $lib_get));
+        $this->assertTrue($this->arrays_are_similar($empty, $libget));
 
     }
 
-    public function test_smartcohort_store_filter()
-    {
+    public function test_smartcohort_store_rule() {
         global $DB;
         $this->resetAfterTest();
 
         $cohort = $this->getDataGenerator()->create_cohort();
 
-        $filter = new stdClass();
-        $filter->name = 'CNW Co.';
-        $filter->cohort_id = $cohort->id;
-        $filter->rules = array();
+        $rule = [];
+        $rule['name'] = 'CNW Co.';
+        $rule['cohort_id'] = $cohort->id;
 
-        $auth = new auth_plugin_base();
-        $customfields = $auth->get_custom_user_profile_fields();
-        if (!empty($customfields)) {
-            foreach ($customfields as $k => $v) {
-                $customfields[$k] = str_replace('profile_field_', '', $v);
-            }
-        }
-        $userfields = array_merge($auth->userfields, $customfields);
+        $filter = [];
+        $filter['lastname'][0]['operator'] = 0;
+        $filter['lastname'][0]['value'] = 'CNW Co.';
 
-        foreach ($userfields as $field) {
-            if ($field != 'lastname') {
-                $filter->rules[] = array(
-                    'userfield' => array_search($field, $userfields),
-                    'operator' => '',
-                    'value' => '',
-                    'logicaloperator' => ''
-                );
-            } else {
-                $filter->rules[] = array(
-                    'userfield' => array_search($field, $userfields),
-                    'operator' => 'equals',
-                    'value' => 'CNW Co.',
-                    'logicaloperator' => ''
-                );
-            }
-        }
+        $this->assertEquals(count($DB->get_records('cnw_sc_rule')), 0);
+        smartcohort_save($rule, $filter);
+        $this->assertEquals(count($DB->get_records('cnw_sc_rule')), 1);
 
-        $this->assertEquals(count($DB->get_records('cnw_sc_filters')), 0);
-        smartcohort_store_filter($filter);
-        $this->assertEquals(count($DB->get_records('cnw_sc_filters')), 1);
     }
 
-    public function test_smartcohort_update_filter()
-    {
+    public function test_smartcohort_update_rule() {
         global $DB;
         $this->resetAfterTest();
 
-        $filter = $this->create_filter();
+        $rule = $this->create_rule();
 
-        $this->assertEquals($filter['filter']->rules[1]['value'], 'CNW Co.');
+        $this->assertEquals($rule['filter']['lastname'][0]['value'], 'CNW Co.');
 
-        $filter['filter']->id = $filter['filterid'];
-        $filter['filter']->rules[1]['value'] = 'CNW Co. ' . date('Y');
+        $rule['filter']['lastname'][0]['value'] = 'CNW Co. ' . date('Y');
 
-        smartcohort_update_filter($filter['filter']);
+        $rulearr['rule_id'] = $rule['rule']->id;
+        $rulearr['name'] = $rule['rule']->name;
+        $rulearr['cohort_id'] = $rule['rule']->cohort_id;
 
-        $search = $DB->get_record('cnw_sc_rules', ['filter_id' => $filter['filterid'], 'operator' => 'equals', 'field' => 'lastname', 'value' => 'CNW Co. ' . date('Y')]);
+        smartcohort_update($rulearr, $rule['filter']);
 
-        $this->assertEquals($search->operator, 'equals');
+        $search = $DB->get_record('cnw_sc_filter', ['rule_id' => $rule['rule']->id, 'operator' => 0, 'field' => 'lastname', 'value' => 'CNW Co. ' . date('Y')]);
+
+        $this->assertEquals($search->operator, 0);
         $this->assertEquals($search->value, 'CNW Co. ' . date('Y'));
 
     }
 
-    public function test_smartcohort_check_user_create_event_with_no_rules()
-    {
+    public function test_smartcohort_check_user_create_event_with_no_filters() {
         global $DB;
         $this->resetAfterTest();
 
         $cohort = $this->getDataGenerator()->create_cohort();
 
-        $usertoAdd = new stdClass();
-        $usertoAdd->username = 'cnw';
-        $usertoAdd->email = 'moodle@cnw.hu';
-        $usertoAdd->firstname = 'CNW';
-        $usertoAdd->lastname = 'CNW Zrt.';
+        $usertoadd = new stdClass();
+        $usertoadd->username = 'cnw';
+        $usertoadd->email = 'moodle@cnw.hu';
+        $usertoadd->firstname = 'CNW';
+        $usertoadd->lastname = 'CNW Zrt.';
 
-        $user = user_create_user($usertoAdd);
-
+        $user = user_create_user($usertoadd);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user));
-        $filter = $filter = $this->create_filter('CNW Co.', $cohort->id);
+        $rule = $this->create_rule('CNW Co.', $cohort->id);
         $this->assertFalse(cohort_is_member($cohort->id, $user));
 
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
+        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
     }
 
-    public function test_smartcohort_check_user_create_event_with_rules()
-    {
+    public function test_smartcohort_check_user_create_event_with_filters() {
         global $DB;
         $this->resetAfterTest();
 
         $cohort = $this->getDataGenerator()->create_cohort();
 
-        $filter = $filter = $this->create_filter('CNW', $cohort->id);
+        $this->create_rule('CNW', $cohort->id);
 
-        $usertoAdd = new stdClass();
-        $usertoAdd->username = 'cnw';
-        $usertoAdd->email = 'moodle@cnw.hu';
-        $usertoAdd->firstname = 'CNW';
-        $usertoAdd->lastname = 'CNW';
+        $usertoadd = new stdClass();
+        $usertoadd->username = 'cnw';
+        $usertoadd->email = 'moodle@cnw.hu';
+        $usertoadd->firstname = 'CNW';
+        $usertoadd->lastname = 'CNW';
 
-        $user = user_create_user($usertoAdd);
+        $user = user_create_user($usertoadd);
 
         $search = $DB->count_records('cnw_sc_queue', ['user_id' => $user]);
 
         $this->assertTrue(($search != 0));
     }
 
-    public function test_smartcohort_run_filters_for_all_users()
-    {
+    public function test_smartcohort_run_rules_for_all_users() {
         global $DB;
         $this->resetAfterTest();
 
         $cohort = $this->getDataGenerator()->create_cohort();
         $user = $this->getDataGenerator()->create_user(array('lastname' => 'CNW Co.'));
         $user2 = $this->getDataGenerator()->create_user();
-        $filter = $filter = $this->create_filter('CNW Co.', $cohort->id);
+        $rule = $this->create_rule('CNW Co.', $cohort->id);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
+        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user2->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
+        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
 
-        smartcohort_run_filters();
+        smartcohort_run_rules();
 
         $this->assertTrue(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
+        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 1);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user2->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
+        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
-
 
     }
 
-    public function test_smartcohort_run_filters_for_one_user()
-    {
+    public function test_smartcohort_run_rules_for_one_user() {
         global $DB;
         $this->resetAfterTest();
 
         $cohort = $this->getDataGenerator()->create_cohort();
         $user = $this->getDataGenerator()->create_user(array('lastname' => 'CNW Co.'));
         $user2 = $this->getDataGenerator()->create_user();
-        $filter = $filter = $this->create_filter('CNW Co.', $cohort->id);
+        $rule = $this->create_rule('CNW Co.', $cohort->id);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
+        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user2->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
+        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
 
-        smartcohort_run_filters($user->id);
+        smartcohort_run_rules($user->id);
 
         $this->assertTrue(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
+        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 1);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user2->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
+        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
-
 
     }
 
-    public function test_smartcohort_delete_filter_with_undo()
-    {
+    public function test_smartcohort_delete_rule_with_undo() {
         global $DB;
         $this->resetAfterTest();
 
         $cohort = $this->getDataGenerator()->create_cohort();
         $user = $this->getDataGenerator()->create_user(array('lastname' => 'CNW Co.'));
         $user2 = $this->getDataGenerator()->create_user(array('firstname' => 'CNW Co.'));
-        $filter = $this->create_filter('CNW Co.', $cohort->id);
-        $filter2 = $this->create_filter('CNW Co.', $cohort->id, 'firstname');
-        smartcohort_run_filters();
+        $rule = $this->create_rule('CNW Co.', $cohort->id);
+        $rule2 = $this->create_rule('CNW Co.', $cohort->id, 'firstname');
+        smartcohort_run_rules();
 
         $this->assertTrue(cohort_is_member($cohort->id, $user->id));
         $this->assertTrue(cohort_is_member($cohort->id, $user2->id));
 
-        smartcohort_delete_filter($filter['filter'], 1);
+        smartcohort_delete_rule($rule['rule'], 1);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
+        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
 
         $this->assertTrue(cohort_is_member($cohort->id, $user2->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter2['filterid']]);
+        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule2['rule']->id]);
         $this->assertEquals($query, 1);
 
     }
 
-    public function test_smartcohort_delete_with_keep()
-    {
+    public function test_smartcohort_delete_with_keep() {
         global $DB;
         $this->resetAfterTest();
 
         $cohort = $this->getDataGenerator()->create_cohort();
         $user = $this->getDataGenerator()->create_user(array('lastname' => 'CNW Co.'));
         $user2 = $this->getDataGenerator()->create_user(array('firstname' => 'CNW Co.'));
-        $filter = $this->create_filter('CNW Co.', $cohort->id);
-        $filter2 = $this->create_filter('CNW Co.', $cohort->id, 'firstname');
-        smartcohort_run_filters();
+        $rule = $this->create_rule('CNW Co.', $cohort->id);
+        $rule2 = $this->create_rule('CNW Co.', $cohort->id, 'firstname');
+        smartcohort_run_rules();
 
         $this->assertTrue(cohort_is_member($cohort->id, $user->id));
         $this->assertTrue(cohort_is_member($cohort->id, $user2->id));
 
-        smartcohort_delete_filter($filter['filter'], 0);
+        smartcohort_delete_rule($rule['rule'], 0);
 
         $this->assertTrue(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter['filterid']]);
+        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
 
         $this->assertTrue(cohort_is_member($cohort->id, $user2->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'filter_id' => $filter2['filterid']]);
+        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule2['rule']->id]);
         $this->assertEquals($query, 1);
     }
 

@@ -29,8 +29,5 @@ defined('MOODLE_INTERNAL') || die();
  */
 function xmldb_local_cnw_smartcohort_uninstall() {
 
-    $view = "mdl_user_all_fields";
-    smartcohort_drop_view($view);
-
     return true;
 }

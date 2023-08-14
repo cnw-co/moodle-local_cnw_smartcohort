@@ -24,36 +24,25 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$observers = array(
+$observers = [
 
-    array(
-        'eventname'   => '\core\event\user_updated',
-        'callback'    => 'local_cnw_smartcohort_observer::user_updated',
-    ),
+    [
+        'eventname' => '\core\event\user_updated',
+        'callback' => 'local_cnw_smartcohort_observer::user_updated',
+    ],
 
-    array(
-        'eventname'   => '\core\event\user_created',
-        'callback'    => 'local_cnw_smartcohort_observer::user_updated',
-    ),
+    [
+        'eventname' => '\core\event\user_created',
+        'callback' => 'local_cnw_smartcohort_observer::user_updated',
+    ],
 
-    array(
-        'eventname'   => '\core\event\user_deleted',
-        'callback'    => 'local_cnw_smartcohort_observer::user_deleted',
-    ),
-    array(
-        'eventname'   => '\core\event\cohort_deleted',
-        'callback'    => 'local_cnw_smartcohort_observer::cohort_deleted'
-    ),
-    array(
-        'eventname'   => '\core\event\user_info_field_created',
-        'callback'    => 'local_cnw_smartcohort_observer::user_info_field_created'
-    ),
-    array(
-        'eventname'   => '\core\event\user_info_field_deleted',
-        'callback'    => 'local_cnw_smartcohort_observer::user_info_field_deleted'
-    ),
-    array(
-        'eventname'   => '\core\event\user_info_field_updated',
-        'callback'    => 'local_cnw_smartcohort_observer::user_info_field_updated'
-    )
-);
+    [
+        'eventname' => '\core\event\user_deleted',
+        'callback' => 'local_cnw_smartcohort_observer::user_deleted',
+    ],
+    [
+        'eventname' => '\core\event\cohort_deleted',
+        'callback' => 'local_cnw_smartcohort_observer::cohort_deleted'
+    ]
+
+];
