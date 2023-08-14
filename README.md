@@ -1,4 +1,4 @@
-![Smart Cohort](docs/logo.png?raw=true)
+   ![Smart Cohort](docs/logo.png?raw=true)
 
 # Smart Cohort #
 
@@ -14,7 +14,7 @@ The module was originally developed for our partners, but we feel like that this
 
 Minimum: Moodle 3.5.4
 
-Maximum: 3.6.3+
+Maximum: 4.2.1
 
 ## Screenshots ##
 
@@ -22,16 +22,16 @@ Empty cohorts
 
 ![](docs/001_available_cohorts.png?raw=true)
 
-Create filter
+Create rule
 
 ![](docs/007_create_with_2_rules.png?raw=true)
 ![](docs/008_rules.png?raw=true)
 
-After that, you can see the filter is in progress
+After that, you can see the rule is in progress
 
 ![](docs/009_initializing.png?raw=true)
 
-Filter is initialized by scheduled task
+Rule is initialized by scheduled task
 
 ![](docs/010_initialized.png?raw=true)
 
@@ -46,17 +46,17 @@ After that, check your cohorts and see the magic
 Moodle plugin directory, or you can use git to clone it into your source:
 
      `git clone git@github.com:cnw-co/moodle-local_cnw_smartcohort.git local/cnw_smartcohort`
-     
+
       Or install via the Moodle plugin directory:
-         
+
       https://moodle.org/plugins/local_cnw_smartcohort
-     
+
 2. Then run the Moodle upgrade
 
     If you have issues please log them in github here:
-    
+
     https://github.com/cnw-co/moodle-local_cnw_smartcohort/issues
-    
+
 3. Go to `Dashboard ► Site administration ► Users ► Accounts ► Smart Cohort` and create your first filter
 
 

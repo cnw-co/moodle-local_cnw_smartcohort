@@ -26,13 +26,13 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/../lib.php');
 
-class local_cnw_smartcohort_observer
-{
+class local_cnw_smartcohort_observer {
+
+
     /**
      * @param \core\event\base $event
      */
-    public static function user_updated(core\event\base $event)
-    {
+    public static function user_updated(core\event\base $event) {
         global $DB;
         $eventdata = $event->get_data();
 
@@ -45,8 +45,7 @@ class local_cnw_smartcohort_observer
     /**
      * @param \core\event\base $event
      */
-    public static function user_deleted(core\event\base $event)
-    {
+    public static function user_deleted(core\event\base $event) {
         $eventdata = $event->get_data();
         smartcohort_delete_insertions($eventdata['objectid']);
     }
@@ -54,18 +53,17 @@ class local_cnw_smartcohort_observer
     /**
      * @param \core\event\base $event
      */
-    public static function cohort_deleted(core\event\base $event)
-    {
+    public static function cohort_deleted(core\event\base $event) {
         global $DB;
         $eventdata = $event->get_data();
 
-        $filters = $DB->get_records('cnw_sc_filters', ['cohort_id' => $eventdata['objectid']]);
+        $rules = $DB->get_records('cnw_sc_rule', ['cohort_id' => $eventdata['objectid']]);
 
-        foreach ($filters as $filter) {
-            $DB->delete_records('cnw_sc_rules', ['filter_id' => $filter->id]);
+        foreach ($rules as $rule) {
+            $DB->delete_records('cnw_sc_filter', ['rule_id' => $rule->id]);
         }
 
-        $DB->delete_records('cnw_sc_filters', ['cohort_id' => $eventdata['objectid']]);
+        $DB->delete_records('cnw_sc_rule', ['cohort_id' => $eventdata['objectid']]);
         $DB->delete_records('cnw_sc_user_cohort', ['cohort_id' => $eventdata['objectid']]);
     }
 

@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $tasks = [
     [
-        'classname' => 'local_cnw_smartcohort\task\initialize_filter',
+        'classname' => 'local_cnw_smartcohort\task\initialize_rule',
         'blocking' => 0,
         'minute' => '*',
         'hour' => '*',
