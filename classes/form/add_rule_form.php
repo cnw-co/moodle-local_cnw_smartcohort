@@ -43,7 +43,7 @@ use stdClass;
 class add_rule_form extends dynamic_form {
 
     /**
-     * Form definition
+     * @inheritdoc
      */
     public function definition() {
         $mform = $this->_form;
@@ -51,12 +51,12 @@ class add_rule_form extends dynamic_form {
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
 
-        // Name field
+        // Name field.
         $mform->addElement('text', 'name', get_string('name', 'local_cnw_smartcohort'), 'maxlength="254" size="50"');
         $mform->addRule('name', get_string('required'), 'required', null, 'client');
         $mform->setType('name', PARAM_TEXT);
 
-        // Cohort field
+        // Cohort field.
         $options = [];
         foreach (cohort_get_all_cohorts()['cohorts'] as $cohort) {
             $options[$cohort->id] = $cohort->name;
@@ -67,12 +67,23 @@ class add_rule_form extends dynamic_form {
 
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function get_context_for_dynamic_submission(): \context {
         return context_system::instance();
     }
+
+    /**
+     * @inheritdoc
+     */
     protected function check_access_for_dynamic_submission(): void {
         require_capability('local/cnw_smartcohort:manage',  context_system::instance());
     }
+
+    /**
+     * @inheritdoc
+     */
     public function process_dynamic_submission() {
         global $DB;
         $data = $this->get_data();
@@ -87,9 +98,17 @@ class add_rule_form extends dynamic_form {
         $url = new moodle_url('/local/cnw_smartcohort/edit.php', ['id' => $id]);
         return $url->out(false);
     }
+
+    /**
+     * @inheritdoc
+     */
     public function set_data_for_dynamic_submission(): void {
 
     }
+
+    /**
+     * @inheritdoc
+     */
     protected function get_page_url_for_dynamic_submission(): moodle_url {
         return new moodle_url('/local/cnw_smartcohort/index.php');
     }

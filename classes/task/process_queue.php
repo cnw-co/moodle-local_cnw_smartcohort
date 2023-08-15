@@ -29,8 +29,14 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/../../lib.php');
 
+/**
+ * Scheduled task for queue processing.
+ *
+ * @package     local_cnw_smartcohort
+ * @copyright   CNW Rendszerintegrációs Zrt. <moodle@cnw.hu>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class process_queue extends \core\task\scheduled_task {
-
 
     /**
      * Return the task's name as shown in admin screens.

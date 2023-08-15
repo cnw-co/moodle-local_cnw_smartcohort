@@ -22,13 +22,19 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 namespace local_cnw_smartcohort\task;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/../../lib.php');
 
+/**
+ * Scheduled task for rule initialization.
+ *
+ * @package     local_cnw_smartcohort
+ * @copyright   CNW Rendszerintegrációs Zrt. <moodle@cnw.hu>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class initialize_rule extends \core\task\scheduled_task {
 
 

@@ -32,6 +32,12 @@ require_once($CFG->dirroot . '/cohort/lib.php');
 require_once($CFG->dirroot . '/lib/authlib.php');
 require_once($CFG->dirroot . '/user/filters/lib.php');
 
+/**
+ * Get smart cohort rules.
+ *
+ * @param boolean $withdeleted
+ * @return array
+ */
 function smartcohort_get_rules($withdeleted = false) {
     global $DB, $CFG;
 
@@ -44,6 +50,7 @@ function smartcohort_get_rules($withdeleted = false) {
 
 /**
  * Delete rule.
+ *
  * @param  stdClass $rule
  * @param int $mode
  * @return void
@@ -54,7 +61,7 @@ function smartcohort_delete_rule($rule, $mode = 1) {
 
     switch ($mode) {
         case 1:
-            // UNDO COHORT INSERTIONS
+            // UNDO COHORT INSERTIONS.
             $sql = "SELECT *
                     FROM {cnw_sc_user_cohort} t1
                     WHERE rule_id = ?
@@ -71,8 +78,8 @@ function smartcohort_delete_rule($rule, $mode = 1) {
             }
             break;
         case 2:
-            // KEEP COHORT INSERTIONS
-            // NOTHING TO DO AT THIS POINT
+            // KEEP COHORT INSERTIONS.
+            // NOTHING TO DO AT THIS POINT.
             break;
     }
 
@@ -109,7 +116,7 @@ function smartcohort_run_rule($rule, $userid = null) {
     $shouldbeincohort = array_diff($affecteduserids, $cohortuserids);
     $shouldnotbeincohort = array_diff($cohortuserids, $affecteduserids);
 
-    // REMOVE FROM COHORT
+    // REMOVE FROM COHORT.
     foreach ($shouldnotbeincohort as $userid) {
         $scadds = $DB->get_records('cnw_sc_user_cohort', ['cohort_id' => $rule->cohort_id, 'user_id' => $userid]);
         if (count($scadds) == 1 && array_values($scadds)[0]->rule_id == $rule->id) {
@@ -118,10 +125,13 @@ function smartcohort_run_rule($rule, $userid = null) {
         }
     }
 
-    // ADD TO COHORT
+    // ADD TO COHORT.
     foreach ($shouldbeincohort as $userid) {
         cohort_add_member($rule->cohort_id, $userid);
-        if (!$DB->record_exists('cnw_sc_user_cohort', ['cohort_id' => $rule->cohort_id, 'user_id' => $userid, 'rule_id' => $rule->id])) {
+        if (!$DB->record_exists('cnw_sc_user_cohort',
+                                ['cohort_id' => $rule->cohort_id,
+                                'user_id' => $userid,
+                                'rule_id' => $rule->id])) {
             $scadd = new stdClass();
             $scadd->cohort_id = $rule->cohort_id;
             $scadd->user_id = $userid;
@@ -130,10 +140,13 @@ function smartcohort_run_rule($rule, $userid = null) {
         }
     }
 
-    // UPDATE THE rule'S RELATIONS IF ANOTHER rule ADDED USERS TO COHORT PREVIOUSLY
+    // UPDATE THE RULE'S RELATIONS IF ANOTHER RULE ADDED USERS TO COHORT PREVIOUSLY.
     $intersect = array_intersect($affecteduserids, $cohortuserids);
     foreach ($intersect as $userid) {
-        if (!$DB->record_exists('cnw_sc_user_cohort', ['cohort_id' => $rule->cohort_id, 'user_id' => $userid, 'rule_id' => $rule->id])) {
+        if (!$DB->record_exists('cnw_sc_user_cohort',
+                                ['cohort_id' => $rule->cohort_id,
+                                'user_id' => $userid,
+                                'rule_id' => $rule->id])) {
             $scadd = new stdClass();
             $scadd->cohort_id = $rule->cohort_id;
             $scadd->user_id = $userid;
@@ -167,6 +180,14 @@ function smartcohort_delete_insertions($userid) {
 
     $DB->delete_records('cnw_sc_user_cohort', ['user_id' => $userid]);
 }
+
+/**
+ * Get all users who meet a specific smart cohort filtering criteria.
+ *
+ * @param int $ruleid
+ * @param int $userid
+ * @return array
+ */
 function smartcohort_get_users_by_rule($ruleid, $userid = null) {
     global $DB, $CFG;
 
@@ -342,6 +363,16 @@ function smartcohort_get_field($fieldname, $advanced) {
             return null;
     }
 }
+
+/**
+ * Returns sql where statement based on active user filters.
+ *
+ * @param array $scfilter
+ * @param array $fields
+ * @param string $extra
+ * @param array|null $params
+ * @return array
+ */
 function smartcohort_get_sql_filter($scfilter = null, $fields = null, $extra = '', array $params = null) {
 
     $sqls = [];
@@ -372,6 +403,13 @@ function smartcohort_get_sql_filter($scfilter = null, $fields = null, $extra = '
     }
 }
 
+/**
+ * Save smart cohort rule and filters
+ *
+ * @param array $scdata
+ * @param array $scfilter
+ * @return int
+ */
 function smartcohort_save($scdata, $scfilter) {
     global $DB;
 
@@ -401,6 +439,13 @@ function smartcohort_save($scdata, $scfilter) {
     return $ruleid;
 }
 
+/**
+ * Update smart cohort rule and filters.
+ *
+ * @param array $scdata
+ * @param array $scfilter
+ * @return void
+ */
 function smartcohort_update($scdata, $scfilter) {
     global $DB;
 
@@ -430,6 +475,14 @@ function smartcohort_update($scdata, $scfilter) {
     $transaction->allow_commit();
 }
 
+/**
+ * Form to display when deleting smart cohort rule.
+ *
+ * @param stdClass $rule
+ * @param int $confirm
+ * @param moodle_url $returnurl
+ * @return void
+ */
 function smartcohort_display_delete_form($rule, $confirm, $returnurl) {
     global $DB, $PAGE, $OUTPUT, $COURSE;
     $PAGE->url->param('delete', 1);
@@ -445,10 +498,12 @@ function smartcohort_display_delete_form($rule, $confirm, $returnurl) {
     echo $OUTPUT->header();
     echo $OUTPUT->heading($strheading);
 
-    // CONFIRM
+    // CONFIRM.
     $message = get_string('delconfirm', 'local_cnw_smartcohort', format_string($rule->name)) . '<br/><br/>';
-    $message .= '<b>' . get_string('delconfirm_undo', 'local_cnw_smartcohort') . ':</b> ' . get_string('delconfirm_undo_desc', 'local_cnw_smartcohort') . '<br/><br/>';
-    $message .= '<b>' . get_string('delconfirm_keep', 'local_cnw_smartcohort') . ':</b> ' . get_string('delconfirm_keep_desc', 'local_cnw_smartcohort') . '<br/>';
+    $message .= '<b>' . get_string('delconfirm_undo', 'local_cnw_smartcohort') . ':</b> ' .
+                        get_string('delconfirm_undo_desc', 'local_cnw_smartcohort') . '<br/><br/>';
+    $message .= '<b>' . get_string('delconfirm_keep', 'local_cnw_smartcohort') . ':</b> ' .
+                        get_string('delconfirm_keep_desc', 'local_cnw_smartcohort') . '<br/>';
 
     $continue1 = new single_button(new moodle_url('/local/cnw_smartcohort/edit.php',
                                                   [
@@ -497,7 +552,10 @@ function smartcohort_display_delete_form($rule, $confirm, $returnurl) {
     $confirmoutput .= html_writer::tag('p', $message);
     $confirmoutput .= $OUTPUT->box_end();
     $confirmoutput .= $OUTPUT->box_start('modal-footer', 'modal-footer');
-    $confirmoutput .= html_writer::tag('div', $OUTPUT->render($continue1) . $OUTPUT->render($continue2) . $OUTPUT->render($cancel), ['class' => 'buttons']);
+    $confirmoutput .= html_writer::tag('div',
+                                       $OUTPUT->render($continue1) .
+                                       $OUTPUT->render($continue2) .
+                                       $OUTPUT->render($cancel), ['class' => 'buttons']);
     $confirmoutput .= $OUTPUT->box_end();
     $confirmoutput .= $OUTPUT->box_end();
     $confirmoutput .= $OUTPUT->box_end();
@@ -532,6 +590,8 @@ class smartcohort_filtering extends user_filtering {
 
     /**
      * Contructor
+     *
+     * @param int $ruleid
      * @param array $fieldnames array of visible user fields
      * @param string $baseurl base url used for submission/return, null if the same of current page
      * @param array $extraparams extra page parameters
@@ -587,7 +647,6 @@ class smartcohort_filtering extends user_filtering {
         } else {
             if (!$tmp) {
                 $this->scfilter = [];
-                // $this->scdata = [];
             } else {
                 // Store rule&filter data from temporary db into class properties.
                 foreach ($tmp as $tmpfilter) {
@@ -616,7 +675,7 @@ class smartcohort_filtering extends user_filtering {
                 'confirmed' => 0,
                 'suspended' => 0,
                 'profile' => 0,
-                // 'courserole' => 0,
+                /* 'courserole' => 0,
                 // 'anycourses' => 0,
                 // 'systemrole' => 0,
                 // 'cohort' => 0,
@@ -626,8 +685,8 @@ class smartcohort_filtering extends user_filtering {
                 // 'timecreated' => 0,
                 // 'timemodified' => 0,
                 // 'nevermodified' => 0,
+                 'mnethostid' => 0, */
                 'auth' => 0,
-                // 'mnethostid' => 0,
                 'idnumber' => 0,
                 'institution' => 0,
                 'department' => 0,
@@ -828,6 +887,17 @@ class smartcohort_filtering extends user_filtering {
         }
     }
 
+    /**
+     * Display table of filtered users.
+     *
+     * @param string $baseurl
+     * @param string $sort
+     * @param string $dir
+     * @param int $page
+     * @param int $perpage
+     * @param context $context
+     * @return void
+     */
     public function display_table($baseurl, $sort, $dir, $page, $perpage, $context) {
         global $CFG, $OUTPUT;
 

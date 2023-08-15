@@ -36,7 +36,7 @@ use moodleform;
 class action_form extends moodleform {
 
     /**
-     * Form definition.
+     * @inheritdoc
      */
     public function definition() {
 
@@ -45,6 +45,9 @@ class action_form extends moodleform {
         $this->add_action_buttons();
     }
 
+    /**
+     * @inheritdoc
+     */
     public function validation($data, $files) {
 
         $scdata = $this->_customdata['scdata'];
