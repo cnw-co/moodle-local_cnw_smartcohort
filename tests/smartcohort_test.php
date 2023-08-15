@@ -22,6 +22,9 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_cnw_smartcohort;
+use stdClass;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -30,37 +33,47 @@ require_once($CFG->dirroot . '/lib/authlib.php');
 require_once(__DIR__ . "/../lib.php");
 require_once("$CFG->dirroot/user/lib.php");
 
+use advanced_testcase;
+
+/**
+ * Class smartcohort_test
+ *
+ * @package     local_cnw_smartcohort
+ * @copyright   CNW Rendszerintegrációs Zrt. <moodle@cnw.hu>
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class smartcohort_test extends advanced_testcase {
 
 
     /**
      * Helper function for array is similar check
      *
-     * @param $a
-     * @param $b
+     * @param array $a
+     * @param array $b
      * @return bool
      */
     public function arrays_are_similar($a, $b) {
-        // if the indexes don't match, return immediately
+        // If the indexes don't match, return immediately.
         if (count(array_diff_assoc($a, $b))) {
             return false;
         }
-        // we know that the indexes, but maybe not values, match.
-        // compare the values between the two arrays
+        // We know that the indexes, but maybe not values, match.
+        // Compare the values between the two arrays.
         foreach ($a as $k => $v) {
             if ($v !== $b[$k]) {
                 return false;
             }
         }
-        // we have identical indexes, and no unequal values
+        // We have identical indexes, and no unequal values.
         return true;
     }
 
     /**
-     * Helper for create new rule for lastname default
+     * Helper for create new rule for lastname default.
      *
-     * @param null $name
-     * @param null $cohortid
+     * @param string $name
+     * @param int $cohortid
+     * @param string $getfield
      * @return array
      */
     private function create_rule($name = null, $cohortid = null, $getfield = 'lastname') {
@@ -92,6 +105,11 @@ class smartcohort_test extends advanced_testcase {
 
     }
 
+    /**
+     * Cohort lib has all function test.
+     *
+     * @return void
+     */
     public function testcohortlibhasallfunction() {
         global $DB;
         $this->resetAfterTest();
@@ -106,6 +124,11 @@ class smartcohort_test extends advanced_testcase {
         $this->assertFalse(cohort_is_member($cohort->id, $user->id));
     }
 
+    /**
+     * Cohort table schema test.
+     *
+     * @return void
+     */
     public function testcohorttableschema() {
         global $DB;
         $this->resetAfterTest();
@@ -121,6 +144,11 @@ class smartcohort_test extends advanced_testcase {
         $this->assertTrue(property_exists($table, 'cohortid'));
     }
 
+    /**
+     * Get rules test.
+     *
+     * @return void
+     */
     public function test_smartcohort_get_rules() {
         global $DB;
 
@@ -131,6 +159,11 @@ class smartcohort_test extends advanced_testcase {
 
     }
 
+    /**
+     * Save rule test.
+     *
+     * @return void
+     */
     public function test_smartcohort_store_rule() {
         global $DB;
         $this->resetAfterTest();
@@ -151,6 +184,11 @@ class smartcohort_test extends advanced_testcase {
 
     }
 
+    /**
+     * Update rule test.
+     *
+     * @return void
+     */
     public function test_smartcohort_update_rule() {
         global $DB;
         $this->resetAfterTest();
@@ -167,13 +205,23 @@ class smartcohort_test extends advanced_testcase {
 
         smartcohort_update($rulearr, $rule['filter']);
 
-        $search = $DB->get_record('cnw_sc_filter', ['rule_id' => $rule['rule']->id, 'operator' => 0, 'field' => 'lastname', 'value' => 'CNW Co. ' . date('Y')]);
+        $search = $DB->get_record('cnw_sc_filter',
+                                  ['rule_id' => $rule['rule']->id,
+                                  'operator' => 0,
+                                  'field' => 'lastname',
+                                  'value' => 'CNW Co. ' . date('Y')]);
 
         $this->assertEquals($search->operator, 0);
         $this->assertEquals($search->value, 'CNW Co. ' . date('Y'));
 
     }
 
+    /**
+     * Test if user create event triggers smart cohort insertion if the
+     * user does not meet any filter criteria.
+     *
+     * @return void
+     */
     public function test_smartcohort_check_user_create_event_with_no_filters() {
         global $DB;
         $this->resetAfterTest();
@@ -192,10 +240,19 @@ class smartcohort_test extends advanced_testcase {
         $rule = $this->create_rule('CNW Co.', $cohort->id);
         $this->assertFalse(cohort_is_member($cohort->id, $user));
 
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
+        $query = $DB->count_records('cnw_sc_user_cohort',
+                                    ['user_id' => $user,
+                                    'cohort_id' => $cohort->id,
+                                    'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
     }
 
+    /**
+     * Test if user create event triggers smart cohort insertion if the
+     * user meets any filter criteria.
+     *
+     * @return void
+     */
     public function test_smartcohort_check_user_create_event_with_filters() {
         global $DB;
         $this->resetAfterTest();
@@ -217,6 +274,11 @@ class smartcohort_test extends advanced_testcase {
         $this->assertTrue(($search != 0));
     }
 
+    /**
+     * Test smart cohort insertions based on rules for all users.
+     *
+     * @return void
+     */
     public function test_smartcohort_run_rules_for_all_users() {
         global $DB;
         $this->resetAfterTest();
@@ -227,25 +289,42 @@ class smartcohort_test extends advanced_testcase {
         $rule = $this->create_rule('CNW Co.', $cohort->id);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
+        $query = $DB->count_records('cnw_sc_user_cohort',
+                                    ['user_id' => $user->id,
+                                    'cohort_id' => $cohort->id,
+                                    'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user2->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
+        $query = $DB->count_records('cnw_sc_user_cohort',
+                                    ['user_id' => $user2->id,
+                                    'cohort_id' => $cohort->id,
+                                    'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
 
         smartcohort_run_rules();
 
         $this->assertTrue(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
+        $query = $DB->count_records('cnw_sc_user_cohort',
+                                    ['user_id' => $user->id,
+                                    'cohort_id' => $cohort->id,
+                                    'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 1);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user2->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
+        $query = $DB->count_records('cnw_sc_user_cohort',
+                                    ['user_id' => $user2->id,
+                                    'cohort_id' => $cohort->id,
+                                    'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
 
     }
 
+    /**
+     * Test smart cohort insertions based on rules for one user.
+     *
+     * @return void
+     */
     public function test_smartcohort_run_rules_for_one_user() {
         global $DB;
         $this->resetAfterTest();
@@ -256,25 +335,42 @@ class smartcohort_test extends advanced_testcase {
         $rule = $this->create_rule('CNW Co.', $cohort->id);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
+        $query = $DB->count_records('cnw_sc_user_cohort',
+                                    ['user_id' => $user->id,
+                                    'cohort_id' => $cohort->id,
+                                    'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user2->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
+        $query = $DB->count_records('cnw_sc_user_cohort',
+                                    ['user_id' => $user2->id,
+                                    'cohort_id' => $cohort->id,
+                                    'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
 
         smartcohort_run_rules($user->id);
 
         $this->assertTrue(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
+        $query = $DB->count_records('cnw_sc_user_cohort',
+                                    ['user_id' => $user->id,
+                                    'cohort_id' => $cohort->id,
+                                    'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 1);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user2->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
+        $query = $DB->count_records('cnw_sc_user_cohort',
+                                    ['user_id' => $user2->id,
+                                    'cohort_id' => $cohort->id,
+                                    'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
 
     }
 
+    /**
+     * Test if smart cohort rule deletion removes users from cohorts.
+     *
+     * @return void
+     */
     public function test_smartcohort_delete_rule_with_undo() {
         global $DB;
         $this->resetAfterTest();
@@ -292,15 +388,26 @@ class smartcohort_test extends advanced_testcase {
         smartcohort_delete_rule($rule['rule'], 1);
 
         $this->assertFalse(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
+        $query = $DB->count_records('cnw_sc_user_cohort',
+                                    ['user_id' => $user->id,
+                                    'cohort_id' => $cohort->id,
+                                    'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
 
         $this->assertTrue(cohort_is_member($cohort->id, $user2->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule2['rule']->id]);
+        $query = $DB->count_records('cnw_sc_user_cohort',
+                                    ['user_id' => $user2->id,
+                                    'cohort_id' => $cohort->id,
+                                    'rule_id' => $rule2['rule']->id]);
         $this->assertEquals($query, 1);
 
     }
 
+    /**
+     * Test if smart cohort rule deletion keeps users in cohorts.
+     *
+     * @return void
+     */
     public function test_smartcohort_delete_with_keep() {
         global $DB;
         $this->resetAfterTest();
@@ -318,11 +425,17 @@ class smartcohort_test extends advanced_testcase {
         smartcohort_delete_rule($rule['rule'], 0);
 
         $this->assertTrue(cohort_is_member($cohort->id, $user->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule['rule']->id]);
+        $query = $DB->count_records('cnw_sc_user_cohort',
+                                    ['user_id' => $user->id,
+                                    'cohort_id' => $cohort->id,
+                                    'rule_id' => $rule['rule']->id]);
         $this->assertEquals($query, 0);
 
         $this->assertTrue(cohort_is_member($cohort->id, $user2->id));
-        $query = $DB->count_records('cnw_sc_user_cohort', ['user_id' => $user2->id, 'cohort_id' => $cohort->id, 'rule_id' => $rule2['rule']->id]);
+        $query = $DB->count_records('cnw_sc_user_cohort',
+                                    ['user_id' => $user2->id,
+                                    'cohort_id' => $cohort->id,
+                                    'rule_id' => $rule2['rule']->id]);
         $this->assertEquals($query, 1);
     }
 

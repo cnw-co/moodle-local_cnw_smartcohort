@@ -91,7 +91,7 @@ $operators = [
 ];
 
 switch ($action) {
-    // List
+    // List.
     case false:
 
         echo $OUTPUT->heading(get_string('rules', 'local_cnw_smartcohort'));
@@ -114,7 +114,7 @@ switch ($action) {
 
         $data = [];
         foreach ($rules as $rule) {
-            // BUTTONS
+            // BUTTONS.
             $buttons = [
                 html_writer::link(
                     new moodle_url(
@@ -151,7 +151,7 @@ switch ($action) {
                 unset($buttons[1]);
             }
 
-            // FILTERS
+            // FILTERS.
             $filters = $DB->get_records('cnw_sc_filter', ['rule_id' => $rule->id]);
             $filtersstring = "<ul>";
             if (empty($filters)) {
@@ -161,15 +161,19 @@ switch ($action) {
                 foreach ($filters as $filter) {
                     if ($filter->field == 'profile') {
                         if ($i == 0) {
-                            $filtersstring .= '<li>' . get_string('if', 'local_cnw_smartcohort', $profilefields[$filter->profile]);
+                            $filtersstring .= '<li>' . get_string('if', 'local_cnw_smartcohort',
+                                                                  $profilefields[$filter->profile]);
                         } else {
-                            $filtersstring .= '<li>' . get_string('and_if', 'local_cnw_smartcohort', $profilefields[$filter->profile]);
+                            $filtersstring .= '<li>' . get_string('and_if', 'local_cnw_smartcohort',
+                                                                  $profilefields[$filter->profile]);
                         }
                     } else {
                         if ($i == 0) {
-                            $filtersstring .= '<li>' . get_string('if', 'local_cnw_smartcohort', $profilefields[$filter->field]);
+                            $filtersstring .= '<li>' . get_string('if', 'local_cnw_smartcohort',
+                                                                  $profilefields[$filter->field]);
                         } else {
-                            $filtersstring .= '<li>' . get_string('and_if', 'local_cnw_smartcohort', $profilefields[$filter->field]);
+                            $filtersstring .= '<li>' . get_string('and_if', 'local_cnw_smartcohort',
+                                                                  $profilefields[$filter->field]);
                         }
                     }
 
@@ -183,10 +187,10 @@ switch ($action) {
             }
             $filtersstring .= "</ul>";
 
-            // AFFECTED USERS COUNT
+            // AFFECTED USERS COUNT.
             $affectedusers = $DB->count_records('cnw_sc_user_cohort', ['rule_id' => $rule->id]);
 
-            // COHORT
+            // COHORT.
             $cohort = $DB->get_record('cohort', array('id' => $rule->cohort_id));
 
             $data[] = [

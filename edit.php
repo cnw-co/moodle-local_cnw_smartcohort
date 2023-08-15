@@ -53,7 +53,10 @@ if ($returnurl) {
 } else {
     $returnurl = new moodle_url('/local/cnw_smartcohort');
 }
-$baseurl = new moodle_url('/local/cnw_smartcohort/edit.php', array('id' => $rule->id, 'sort' => $sort, 'dir' => $dir, 'perpage' => $perpage));
+$baseurl = new moodle_url('/local/cnw_smartcohort/edit.php', array('id' => $rule->id,
+                                                                   'sort' => $sort,
+                                                                   'dir' => $dir,
+                                                                   'perpage' => $perpage));
 $PAGE->set_context($context);
 $PAGE->set_url($baseurl);
 $PAGE->set_pagelayout('admin');
@@ -77,13 +80,11 @@ $PAGE->set_title($strheading);
 $PAGE->set_heading(get_string('pluginname', 'local_cnw_smartcohort'));
 $PAGE->navbar->add($strheading);
 
-// $editform = new smartcohort_basic_form(null, array('data' => $rule, 'returnurl' => $returnurl));
 $filterform = new smartcohort_filtering($rule->id, null, $baseurl);
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading($strheading);
 
-// $filterform->display_basic();
 $filterform->display_add();
 $filterform->display_active();
 $filterform->display_table($baseurl, $sort, $dir, $page, $perpage, $context);
