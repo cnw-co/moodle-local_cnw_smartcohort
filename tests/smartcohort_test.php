@@ -147,6 +147,8 @@ class smartcohort_test extends advanced_testcase {
     /**
      * Get rules test.
      *
+     * @covers ::smartcohort_get_rules
+     *
      * @return void
      */
     public function test_smartcohort_get_rules() {
@@ -161,6 +163,8 @@ class smartcohort_test extends advanced_testcase {
 
     /**
      * Save rule test.
+     *
+     * @covers ::smartcohort_save
      *
      * @return void
      */
@@ -186,6 +190,8 @@ class smartcohort_test extends advanced_testcase {
 
     /**
      * Update rule test.
+     *
+     * @covers ::smartcohort_update
      *
      * @return void
      */
@@ -220,6 +226,8 @@ class smartcohort_test extends advanced_testcase {
      * Test if user create event triggers smart cohort insertion if the
      * user does not meet any filter criteria.
      *
+     * @covers \local_cnw_smartcohort_observer
+     *
      * @return void
      */
     public function test_smartcohort_check_user_create_event_with_no_filters() {
@@ -251,6 +259,8 @@ class smartcohort_test extends advanced_testcase {
      * Test if user create event triggers smart cohort insertion if the
      * user meets any filter criteria.
      *
+     * @covers \local_cnw_smartcohort_observer
+     *
      * @return void
      */
     public function test_smartcohort_check_user_create_event_with_filters() {
@@ -276,6 +286,8 @@ class smartcohort_test extends advanced_testcase {
 
     /**
      * Test smart cohort insertions based on rules for all users.
+     *
+     * @covers ::smartcohort_run_rules
      *
      * @return void
      */
@@ -323,6 +335,8 @@ class smartcohort_test extends advanced_testcase {
     /**
      * Test smart cohort insertions based on rules for one user.
      *
+     * @covers ::smartcohort_run_rules
+     *
      * @return void
      */
     public function test_smartcohort_run_rules_for_one_user() {
@@ -369,6 +383,8 @@ class smartcohort_test extends advanced_testcase {
     /**
      * Test if smart cohort rule deletion removes users from cohorts.
      *
+     * @covers ::smartcohort_delete_rule
+     *
      * @return void
      */
     public function test_smartcohort_delete_rule_with_undo() {
@@ -405,6 +421,8 @@ class smartcohort_test extends advanced_testcase {
 
     /**
      * Test if smart cohort rule deletion keeps users in cohorts.
+     *
+     * @covers ::smartcohort_delete_rule
      *
      * @return void
      */

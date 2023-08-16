@@ -43,7 +43,9 @@ use stdClass;
 class add_rule_form extends dynamic_form {
 
     /**
-     * @inheritdoc
+     * Form definition.
+     *
+     * @return void
      */
     public function definition() {
         $mform = $this->_form;
@@ -68,21 +70,27 @@ class add_rule_form extends dynamic_form {
     }
 
     /**
-     * @inheritdoc
+     * Return the context for the form.
+     *
+     * @return \context
      */
     protected function get_context_for_dynamic_submission(): \context {
         return context_system::instance();
     }
 
     /**
-     * @inheritdoc
+     * Ensure current user is able to use this form.
+     *
+     * @return void
      */
     protected function check_access_for_dynamic_submission(): void {
         require_capability('local/cnw_smartcohort:manage',  context_system::instance());
     }
 
     /**
-     * @inheritdoc
+     * Process the form submission
+     *
+     * @return string edit page of the rule
      */
     public function process_dynamic_submission() {
         global $DB;
@@ -100,14 +108,18 @@ class add_rule_form extends dynamic_form {
     }
 
     /**
-     * @inheritdoc
+     * Load in existing data as form defaults
+     *
+     * @return void
      */
     public function set_data_for_dynamic_submission(): void {
 
     }
 
     /**
-     * @inheritdoc
+     * URL of the page using this form
+     *
+     * @return moodle_url
      */
     protected function get_page_url_for_dynamic_submission(): moodle_url {
         return new moodle_url('/local/cnw_smartcohort/index.php');

@@ -26,10 +26,14 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/../lib.php');
 
+/**
+ * Class event observer for smart cohort.
+ */
 class local_cnw_smartcohort_observer {
 
-
     /**
+     * Insert users into smart cohort queue upon user update event.
+     *
      * @param \core\event\base $event
      */
     public static function user_updated(core\event\base $event) {
@@ -43,6 +47,8 @@ class local_cnw_smartcohort_observer {
     }
 
     /**
+     * Delete smart cohort insertions upon user delete event.
+     *
      * @param \core\event\base $event
      */
     public static function user_deleted(core\event\base $event) {
@@ -51,6 +57,8 @@ class local_cnw_smartcohort_observer {
     }
 
     /**
+     * Delete smart cohort rule upon cohort delete event.
+     *
      * @param \core\event\base $event
      */
     public static function cohort_deleted(core\event\base $event) {

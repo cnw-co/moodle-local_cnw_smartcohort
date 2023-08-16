@@ -36,7 +36,9 @@ use user_add_filter_form;
 class add_filter_form extends user_add_filter_form {
 
     /**
-     * @inheritdoc
+     * Form definition.
+     *
+     * @return void
      */
     public function definition() {
 
