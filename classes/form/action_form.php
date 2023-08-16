@@ -36,7 +36,9 @@ use moodleform;
 class action_form extends moodleform {
 
     /**
-     * @inheritdoc
+     * Form definition.
+     *
+     * @return void
      */
     public function definition() {
 
@@ -46,7 +48,11 @@ class action_form extends moodleform {
     }
 
     /**
-     * @inheritdoc
+     * Form validation.
+     *
+     * @param mixed $data
+     * @param mixed $files
+     * @return array
      */
     public function validation($data, $files) {
 

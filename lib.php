@@ -90,9 +90,11 @@ function smartcohort_delete_rule($rule, $mode = 1) {
 
 /**
  * Run rule.
- * @param $rule
- * @param null $userid
+ *
+ * @param stdClass $rule
+ * @param int|null $userid
  * @throws dml_exception
+ * @return void
  */
 function smartcohort_run_rule($rule, $userid = null) {
     global $DB;
@@ -158,7 +160,8 @@ function smartcohort_run_rule($rule, $userid = null) {
 
 /**
  * Run all rules.
- * @param null $userid
+ *
+ * @param int|null $userid
  * @throws dml_exception
  */
 function smartcohort_run_rules($userid = null) {
@@ -172,7 +175,8 @@ function smartcohort_run_rules($userid = null) {
 
 /**
  * Delete a user's cohort insertions from the database.
- * @param null $userid
+ *
+ * @param int|null $userid
  * @throws dml_exception
  */
 function smartcohort_delete_insertions($userid) {
@@ -257,6 +261,13 @@ function smartcohort_get_users_by_rule($ruleid, $userid = null) {
     return $users;
 }
 
+/**
+ * Get user_filter fields.
+ *
+ * @param string $fieldname
+ * @param bool $advanced
+ * @return mixed user filter objects
+ */
 function smartcohort_get_field($fieldname, $advanced) {
     global $USER, $CFG, $DB, $SITE;
 
@@ -585,7 +596,10 @@ class smartcohort_filtering extends user_filtering {
     /** @var action_form */
     public $_actionform;
 
+    /** @var array */
     public $scfilter;
+
+    /** @var array */
     public $scdata;
 
     /**
