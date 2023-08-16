@@ -28,5 +28,4 @@ $plugin->component = 'local_cnw_smartcohort';
 $plugin->release = '2.0.2';
 $plugin->version = 2023081600;
 $plugin->requires = 2022041900;
->>>>>>> dev
 $plugin->maturity = MATURITY_ALPHA;
