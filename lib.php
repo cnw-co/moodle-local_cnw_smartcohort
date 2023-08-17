@@ -613,6 +613,10 @@ class smartcohort_filtering extends user_filtering {
     public function __construct($ruleid, $fieldnames = null, $baseurl = null, $extraparams = null) {
         global $DB;
 
+        $this->scfilter = [];
+        $this->scdata = [];
+        $gotemptyonedit = false;
+
         $tmp = $DB->get_record('cnw_sc_tmp', ['rule_id' => -1]);
         if ($tmp) {
             $this->scdata['rule_id'] = $ruleid;
@@ -623,21 +627,30 @@ class smartcohort_filtering extends user_filtering {
 
         $tmp = $DB->get_records('cnw_sc_tmp', ['rule_id' => $ruleid]);
 
+        foreach ($tmp as $key => $tmpfilter) {
+            if ($tmpfilter->field == 'got_empty_on_edit') {
+                $gotemptyonedit = true;
+                unset($tmp[$key]);
+                $DB->delete_records('cnw_sc_tmp', ['field' => 'got_empty_on_edit']);
+            }
+        }
+
         if ($ruleid) {
-            if (!$tmp) {
+            $rule = $DB->get_record('cnw_sc_rule', ['id' => $ruleid]);
+            if (!$tmp && !$gotemptyonedit) {
                 $filters = $DB->get_records('cnw_sc_filter', ['rule_id' => $ruleid]);
-                $rule = $DB->get_record('cnw_sc_rule', ['id' => $ruleid]);
                 $this->scdata['rule_id'] = $ruleid;
                 $this->scdata['name'] = $rule->name;
                 $this->scdata['cohort_id'] = $rule->cohort_id;
                 foreach ($filters as $filter) {
                     // Store rule&filter data from db into class property.
-                    $this->scfilter[$filter->field][] = [
-                        'operator' => (int) $filter->operator,
-                        'value' => $filter->value,
-                        'profile' => (int) $filter->profile
-                    ];
-
+                    if ($filter->field != 'got_empty_on_edit') {
+                        $this->scfilter[$filter->field][] = [
+                            'operator' => (int) $filter->operator,
+                            'value' => $filter->value,
+                            'profile' => (int) $filter->profile
+                        ];
+                    }
                     // Store rule&filter data into tmp db table.
                     $filter->rule_id = $rule->id;
                     $filter->cohort_id = $rule->cohort_id;
@@ -648,15 +661,17 @@ class smartcohort_filtering extends user_filtering {
             } else {
                 // Store rule&filter data from temporary db into class properties.
                 foreach ($tmp as $tmpfilter) {
-                    $this->scfilter[$tmpfilter->field][] = [
-                        'operator' => (int) $tmpfilter->operator,
-                        'value' => $tmpfilter->value,
-                        'profile' => (int) $tmpfilter->profile
-                    ];
+                    if ($tmpfilter->field != 'got_empty_on_edit') {
+                        $this->scfilter[$tmpfilter->field][] = [
+                            'operator' => (int) $tmpfilter->operator,
+                            'value' => $tmpfilter->value,
+                            'profile' => (int) $tmpfilter->profile
+                        ];
+                    }
                 }
                 $this->scdata['rule_id'] = $ruleid;
-                $this->scdata['name'] = reset($tmp)->name;
-                $this->scdata['cohort_id'] = reset($tmp)->cohort_id;
+                $this->scdata['name'] = $rule->name;
+                $this->scdata['cohort_id'] = $rule->cohort_id;
             }
         } else {
             if (!$tmp) {
@@ -664,11 +679,13 @@ class smartcohort_filtering extends user_filtering {
             } else {
                 // Store rule&filter data from temporary db into class properties.
                 foreach ($tmp as $tmpfilter) {
-                    $this->scfilter[$tmpfilter->field][] = [
-                        'operator' => (int) $tmpfilter->operator,
-                        'value' => $tmpfilter->value,
-                        'profile' => (int) $tmpfilter->profile
-                    ];
+                    if ($tmpfilter->field != 'got_empty_on_edit') {
+                        $this->scfilter[$tmpfilter->field][] = [
+                            'operator' => (int) $tmpfilter->operator,
+                            'value' => $tmpfilter->value,
+                            'profile' => (int) $tmpfilter->profile
+                        ];
+                    }
                 }
                 $this->scdata['rule_id'] = $ruleid;
                 $this->scdata['name'] = reset($tmp)->name;
@@ -853,6 +870,17 @@ class smartcohort_filtering extends user_filtering {
                     }
                     $DB->insert_record('cnw_sc_tmp', $record);
                 }
+            }
+
+            // If all active filters were deleted when editing a rule we
+            // insert a record in the tmp table, so we can check it.
+            if ($ruleid && empty($this->scfilter)) {
+                $record = new stdClass;
+                $record->rule_id = $this->scdata['rule_id'];
+                $record->name = $this->scdata['name'];
+                $record->cohort_id = $this->scdata['cohort_id'];
+                $record->field = 'got_empty_on_edit';
+                $DB->insert_record('cnw_sc_tmp', $record);
             }
             $transaction->allow_commit();
 
