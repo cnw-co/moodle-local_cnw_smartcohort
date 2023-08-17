@@ -105,17 +105,23 @@ function xmldb_local_cnw_smartcohort_upgrade($oldversion) {
             $oldfilter->rule_id = $oldfilter->filter_id;
             unset($oldfilter->filter_id);
 
+            if ($oldfilter->operator == 'contains') {
+                $oldfilter->operator = 0;
+            }
+            if ($oldfilter->operator == 'not contains') {
+                $oldfilter->operator = 1;
+            }
             if ($oldfilter->operator == 'equals') {
                 $oldfilter->operator = 2;
             }
             if ($oldfilter->operator == 'not equals') {
                 $oldfilter->operator = 1;
             }
-            if ($oldfilter->operator == 'contains') {
-                $oldfilter->operator = 0;
+            if ($oldfilter->operator == 'start with') {
+                $oldfilter->operator = 3;
             }
-            if ($oldfilter->operator == 'not contains') {
-                $oldfilter->operator = 1;
+            if ($oldfilter->operator == 'end with') {
+                $oldfilter->operator = 4;
             }
 
             if ($oldfilter->is_custom_field == 0) {
@@ -135,21 +141,23 @@ function xmldb_local_cnw_smartcohort_upgrade($oldversion) {
         // MODIFY TABLE CNW_SC_FILTERS.
         $table = new xmldb_table('cnw_sc_filters');
 
-        // Rename table cnw_sc_filters to cnw_sc_rules.
-        $dbman->rename_table($table, 'cnw_sc_rule');
+        if ($dbman->table_exists($table)) {
+            // Rename table cnw_sc_filters to cnw_sc_rules.
+            $dbman->rename_table($table, 'cnw_sc_rule');
+        }
 
         // MODIFY TABLE CNW_SC_RULES.
         $table = new xmldb_table('cnw_sc_rules');
 
         $field = new xmldb_field('is_custom_field', XMLDB_TYPE_INTEGER, '10', null, false, null, '-1', 'field');
-        // Launch change of precision for field profile.
-        $dbman->change_field_precision($table, $field);
-
-        // Launch change of default for field profile.
-        $dbman->change_field_default($table, $field);
-
-        // Rename field is_custom_field to profile.
-        $dbman->rename_field($table, $field, 'profile');
+        if ($dbman->field_exists($table, $field)) {
+            // Launch change of precision for field profile.
+            $dbman->change_field_precision($table, $field);
+            // Launch change of default for field profile.
+            $dbman->change_field_default($table, $field);
+            // Rename field is_custom_field to profile.
+            $dbman->rename_field($table, $field, 'profile');
+        }
 
         // Drop index filter.
         $index = new xmldb_index('filter', XMLDB_INDEX_NOTUNIQUE, ['filter_id']);
@@ -158,22 +166,28 @@ function xmldb_local_cnw_smartcohort_upgrade($oldversion) {
         }
 
         $field = new xmldb_field('operator', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'profile');
-        // Launch change of nullability for field operator.
-        $dbman->change_field_notnull($table, $field);
+        if ($dbman->field_exists($table, $field)) {
+            // Launch change of nullability for field operator.
+            $dbman->change_field_notnull($table, $field);
 
-        // Launch change of type for field operator.
-        $dbman->change_field_type($table, $field);
+            // Launch change of type for field operator.
+            $dbman->change_field_type($table, $field);
 
-        // Launch change of precision for field operator.
-        $dbman->change_field_precision($table, $field);
+            // Launch change of precision for field operator.
+            $dbman->change_field_precision($table, $field);
+        }
 
         // Rename field filter_id to rule_id.
         $field = new xmldb_field('filter_id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null, 'id');
-        $dbman->rename_field($table, $field, 'rule_id');
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->rename_field($table, $field, 'rule_id');
+        }
 
         // Drop field logicaloperator.
         $field = new xmldb_field('logicaloperator', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
-        $dbman->drop_field($table,  $field);
+        if ($dbman->field_exists($table, $field)) {
+            $dbman->drop_field($table,  $field);
+        }
 
         // Add index rule.
         $index = new xmldb_index('rule', XMLDB_INDEX_NOTUNIQUE, ['rule_id']);
@@ -182,7 +196,9 @@ function xmldb_local_cnw_smartcohort_upgrade($oldversion) {
         }
 
         // Rename table cnw_sc_filters to cnw_sc_rule.
-        $dbman->rename_table($table, 'cnw_sc_filter');
+        if ($dbman->table_exists($table)) {
+            $dbman->rename_table($table, 'cnw_sc_filter');
+        }
 
         // MODIFY TABLE CNW_SC_USER_COHORT.
         $table = new xmldb_table('cnw_sc_user_cohort');
